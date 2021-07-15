@@ -1,5 +1,5 @@
 {
-  "name": "stunify-backend",
+  "name": "werizz-backend",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RayeneHamada/stunify-backend.git"
+    "url": "git+https://github.com/RayeneHamada/werizz-backend.git"
   },
   "author": "RayenHamada",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RayeneHamada/stunify-backend/issues"
+    "url": "https://github.com/RayeneHamada/werizz-backend/issues"
   },
-  "homepage": "https://github.com/RayeneHamada/stunify-backend#readme",
+  "homepage": "https://github.com/RayeneHamada/werizz-backend#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",

@@ -4,6 +4,7 @@ require('./models/userModel');
 
 
 require('./config/dbConfig');
+require('./config/passportConfig');
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -11,8 +12,7 @@ const cors = require('cors');
 
 
 
-//import routes
-const userRoute = require('./routes/userRoute');
+
 
 
 
@@ -25,6 +25,9 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
  
 app.use(bodyParser.json());
+
+//import routes
+const userRoute = require('./routes/userRoute');
 
 //use routes
 app.use('/user', userRoute);

@@ -6,27 +6,46 @@ var userSchema = new mongoose.Schema({
 
 
 
-      phoneNumber: {
-        type: String,
-        required: " Phone  number can\'t be empty",
-        unique : true
-      },
-      
-    activated: {
-      type: Boolean,
-      default: false
-      },
-  
+
       email: {
         type: String,
-        lowercase: true
+        lowercase: true,
+        unique : true,
+        required : "E-mail can\'t be empty"
       },
-      firstName: {
-          type: String,
-      },
-      lastName: {
+      fullName: {
         type: String,
       },
+      password: { 
+        type: String,
+        required : "E-mail can\'t be empty"
+      },
+      saltSecret: String,
+
+      phoneNumber: {
+        type: String,
+        unique : true
+      },
+      business: {
+          company_name: {
+            type: String
+          },
+          adress : {
+            type:String,
+          },
+          registration_number: {
+            type : String
+          },
+          website: {
+            type : String
+          }
+      },
+      
+      activated: {
+        type: Boolean,
+        default: false
+        },
+        
       role: {
           type: String,
           required: 'Role can\'t be empty',
@@ -40,6 +59,27 @@ userSchema.path('email').validate((val) => {
     return emailRegex.test(val);
 }, 'Invalid e-mail.');
 
+        
+userSchema.pre('save', function (next) {
+  try {
+
+  bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(this.password, salt, (err, hash) => {
+          this.password = hash;
+          this.saltSecret = salt;
+          next();
+      });
+  });} 
+  catch(error) {
+      next(error);
+    }
+  
+});
+
+userSchema.methods.verifyPassword = function (password) {
+    
+  return bcrypt.compareSync(password, this.password);
+};
 
 
 userSchema.methods.generateJwt = function () {
@@ -49,13 +89,14 @@ userSchema.methods.generateJwt = function () {
         expiresIn: process.env.JWT_EXP
     });
 }
+
+
 userSchema.methods.usePasswordHashToMakeToken = function(){
-    const secret = this.password + "-" + this.create_date
-    const token = jwt.sign({id:this._id}, process.env.JWT_SECRET, {
-      expiresIn: 36000 // 1 hour
-    })
-    return token
-  }
+  const token = jwt.sign({id:this._id}, process.env.JWT_SECRET, {
+    expiresIn: 3600 // 1 hour
+  })
+  return token
+}
 
 
 
