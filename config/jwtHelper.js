@@ -53,7 +53,7 @@ module.exports.verifyUserJwtToken = (req, res, next) => {
     }
 }
 
-module.exports.verifyAdminJwtToken = (req, res, next) => {
+module.exports.verifyBusinessJwtToken = (req, res, next) => {
     var token;
     if ('authorization' in req.headers)
        { token = req.headers['authorization'].split(' ')[1];
@@ -68,7 +68,7 @@ module.exports.verifyAdminJwtToken = (req, res, next) => {
                 if (err)
                     return res.status(500).send({ auth: false, message: 'Token authentication failed.' });
                 else {
-                    if(decoded.role != 'admin')
+                    if(decoded.role != 'business')
                     {
                         return res.status(403).send({ auth: false, message: 'Permission Denied' });
                     }

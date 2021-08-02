@@ -2,16 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const GeoSchema = new mongoose.Schema({
-    type: {
-        type: String,
-        default: 'Point'
-    },
-    coordinates: {
-        type: [Number],
-    }
-});
-
 var userSchema = new mongoose.Schema({
 
 
@@ -36,9 +26,6 @@ var userSchema = new mongoose.Schema({
       },
       lastName: {
         type: String,
-    },
-    saloonName :{
-        type:String
       },
       profile_image: {
         type:String  
@@ -56,68 +43,31 @@ var userSchema = new mongoose.Schema({
           country: {
             type: String,
             default:'switzerland'
-        },
-        geolocation: GeoSchema,
-          
+          }
         
       },
       role: {
           type: String,
           default: 'user'
       },
-        
-  
-      business: {
-      role: {
-        type: String,
-      },
-      description: {
-        type: String
-      },
-      rate: {
-        type: Number,
-      },
-      mobility: {
-        type: Boolean,
-      },
-      prestations: [{
-        name: {
-          type: String
-        },
-        description: {
-          type: String
-        },
-        duration: {
-          type: String,
-        },
-        price: {
-          type: String
-        },
-        category: {
-          type: String
-        },
-        gender: {
-          type: String
+      saloon: {
+        rate: {
+          type: Number,
+          default:0
         }
-      }],
-        schedule: [{
-          day: {
-            type:String
-          },
-          work: {
-            type: Boolean,
-          },
-          start_time: {
-            type:String
-          },
-          end_time: {
-            type:String
-          }
-      }]
-    }
+      },
+      freelancer: {
+        rate: {
+          type: Number,
+          default: 0
+        },
+        mobility: {
+          type: Boolean,
+          default: true
+        }
+      }
       
-});
-userSchema.index({ "address.geolocation": "2dsphere" });
+  });
 
 // Custom validation for email
 userSchema.path('email').validate((val) => {
