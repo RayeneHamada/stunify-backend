@@ -85,7 +85,7 @@ exports.verifCode = function(req,res,next)
               else
                  res.json({ operatiton: "login", verified: false });
              })
-            .catch(error => console.log(error));
+            .catch(error => res.status(404).json(error));
       }
       // si le compte n'est pas activé
       else {
@@ -131,13 +131,12 @@ exports.completeSubscription = function(req,res)
     user.firstName = req.body.firstName;
     user.lastName = req.body.lastName;
     user.email = req.body.email;
-  
 }
 
 
 exports.completeBusinessSignup = function(req,res,next)
 {
-          User.findOne({email: req.body.email },
+          User.findOne({_id: req._id },
             (err, user) => {
                 if (!user)
                     return res.status(404).json({ message: 'User record not found.' });
@@ -161,6 +160,8 @@ exports.completeBusinessSignup = function(req,res,next)
                   
                       User.updateOne({_id: user._id}, user).then(
                         () => {
+
+                          console.log(user);
                           res.status(201).json({
                             message: user.business.role+' updated successfully!'
                           });
@@ -281,7 +282,7 @@ exports.home = (req, res) => {
             },
             "distanceField": "distance",
             "spherical": true,
-          "maxDistance": 10000,
+          "maxDistance": 10000000,
           "query": { "role": "business" },
         }}
     ],
