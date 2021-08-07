@@ -77,7 +77,11 @@ exports.verifCode = function(req,res,next)
                           return res.status(404).json({ status: false, message: 'User record not found.' });
                       else
                           {
-                          res.json({ operatiton: "login", verified: true,"token": user.generateJwt() });
+                            if(user.profile_image)
+                          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName, "profile_image": user.profile_image });
+                        else
+                        res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName});
+                              
                             
                           }
                   });
@@ -127,10 +131,35 @@ exports.verifCode = function(req,res,next)
 }
 exports.completeSubscription = function(req,res)
 {
-    var user = new User();
-    user.firstName = req.body.firstName;
-    user.lastName = req.body.lastName;
-    user.email = req.body.email;
+
+  User.findOne({_id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ message: 'User record not found.' });
+        else
+        {
+          user.firstName = req.body.firstName;
+          user.lastName = req.body.lastName;
+          user.email = req.body.email;
+          
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+
+                  console.log(user);
+                  res.status(201).json({
+                    message: user.role+' updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });   
+  
 }
 
 
