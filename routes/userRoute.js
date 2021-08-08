@@ -16,7 +16,7 @@ router.post('/addPrestation',jwtHelper.verifyBusinessJwtToken, main_controller.a
 
 
 
-router.post('/home',jwtHelper.verifyJwtToken, main_controller.home);
+router.post('/home', main_controller.home);
 
 
 

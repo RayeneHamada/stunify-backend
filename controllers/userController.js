@@ -252,7 +252,7 @@ exports.updateAddress = async (req, res) => {
             
             var address = { "street": req.body.street, "zip": req.body.zip, "city": req.body.city, "country": req.body.country};
             address.geolocation = {
-              coordinates: [loc[0].longitude, loc[0].latitude],
+              coordinates: [loc[0].latitude,loc[0].longitude],
             };
             user.address = address;
             console.log(user);
@@ -311,13 +311,31 @@ exports.home = (req, res) => {
             },
             "distanceField": "distance",
             "spherical": true,
-          "maxDistance": 10000000,
-          "query": { "role": "business" },
+          "maxDistance": 1000000000,
+          "query": { "role": "business","business.role":"salloon" },
         }}
     ],
     function(err,results) {
-
-      res.status(201).send(results);
+      var saloons = results;
+      User.aggregate(
+        [
+            { "$geoNear": {
+                "near": {
+                    "type": "Point",
+                    "coordinates": [req.body.lng,req.body.lat]
+                },
+                "distanceField": "distance",
+                "spherical": true,
+              "maxDistance": 1000000000,
+              "query": { "role": "business","business.role":"freelance" },
+            }}
+        ],
+        function(err,results) {
+          var freelancers = results;
+    
+          res.status(201).send({"saloons":saloons,"freelancers":freelancers});
+      }
+    )
   }
 )
 }
