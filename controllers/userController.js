@@ -35,7 +35,49 @@ exports.sendCode = function(req,res,next)
               else {
                 var user = new User();
                   user.phoneNumber = req.body.phoneNumber;
-                  user.role = req.body.role;
+                  user.save((err, doc) => {  
+                    if (!err)
+                       {    
+                        return   res.status(200).json({sms_state:"sms sent correctly" });
+                        }
+                });
+              }
+            }
+          });
+          
+        }
+      })
+            .catch(error => console.log(error));
+
+}
+
+exports.sendBusinessCode = function(req,res,next)
+{
+    client.verify.services(serviceSid)
+             .verifications
+             .create({to: req.body.phoneNumber, channel: 'sms'})
+      .then(verification => {
+        if (verification.status == "pending") {
+
+
+          User.exists({ phoneNumber: req.body.phoneNumber}, function (err, exist) {
+            if (err) {
+              res.send(err);
+            }
+            else {
+              // si le compte est activé
+              if (exist) {
+                return   res.status(200).json({sms_state:"sms sent correctly" });
+                
+              }
+              else {
+                var user = new User();
+                  user.role = "business";
+                  user.phoneNumber = req.body.phoneNumber;
+                  user.business.catrgories = req.body.categories;
+                  user.business.businessName = req.body.businessName;
+                user.business.role = req.body.role;
+                console.log(user);
                   user.save((err, doc) => {  
                     if (!err)
                        {    
@@ -163,30 +205,28 @@ exports.completeSubscription = function(req,res)
 }
 
 
-exports.completeBusinessSignup = function(req,res,next)
+exports.completeBusinessSignup = async function(req,res,next)
 {
+          const loc = await geocoder.geocode({
+            address: req.body.address.kbis + " " + req.body.address.street + " " + req.body.address.city,
+            //country: "Switzerland",
+            country:req.body.country,
+            zipcode: req.body.address.zip
+          });
           User.findOne({_id: req._id },
             (err, user) => {
                 if (!user)
                     return res.status(404).json({ message: 'User record not found.' });
                 else
                 {
-                  user.role = "business";
-                  user.business.role = req.body.role;
-                  user.business.description = req.body.description;
-                  user.business.rate = req.body.rate;
-                  
-                      if(req.body.role == "freelance")
-                      {
-                        user.firstName = req.body.firstName;
-                        user.lastName = req.body.lastName;
-                      }
-                      else
-                      {
-                        user.saloonName = req.body.saloonName      
-                      }
-                  
-                  
+                  user.email = req.body.email;
+                  user.firstName = req.body.firstName;
+                  user.lastName = req.body.lastName;
+                  var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city, "kbis":req.body.address.kbis};
+                  address.geolocation = {
+                    coordinates: [loc[0].latitude,loc[0].longitude],
+                  };
+                  user.address = address;  
                       User.updateOne({_id: user._id}, user).then(
                         () => {
 
@@ -231,7 +271,133 @@ exports.updateProfileImage = (req, res) => {
               );
             }
     });
-  }
+}
+  
+exports.updateLogo = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.business.logo = req.file.filename;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'Logo updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
+}
+
+exports.updateOwnerPicture = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.business.owner_picture = req.file.filename;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'owner_picture updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
+}
+
+exports.addSpacePhotos = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.business.logo = req.file.filename;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'Logo updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
+}
+
+exports.updateDescription = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.business.prestation_description = req.body.prestation_description;
+              user.business.about = req.body.about;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'Description updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
+}
+
+exports.updateSchedule = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.business.schedule = req.body.schedule;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'Schedule updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
+}
 
 
 exports.updateAddress = async (req, res) => {
@@ -248,8 +414,7 @@ exports.updateAddress = async (req, res) => {
               return res.status(404).json({ status: false, message: 'User record not found.' });
           else
           {
-            
-            
+                        
             var address = { "street": req.body.street, "zip": req.body.zip, "city": req.body.city, "country": req.body.country};
             address.geolocation = {
               coordinates: [loc[0].latitude,loc[0].longitude],
@@ -270,7 +435,7 @@ exports.updateAddress = async (req, res) => {
                     });
                   }
                 );
-              }
+          }
       });
 }
   
@@ -281,8 +446,7 @@ exports.addPrestation = (req, res) => {
             return res.status(404).json({ status: false, message: 'User record not found.' });
         else
         {
-              prestation = { "name": req.body.name, "description": req.body.description, "duration": req.body.duration, "price": req.body.price, "category": req.body.category, "gender": req.body.gender };
-              adress = {"address_name":req.body.address_name,"street":req.body.street,"landmark":req.body.landmark,"city":req.body.city}
+              prestation = { "name": req.body.name, "description": req.body.description, "duration": req.body.duration, "price": req.body.price, "category": req.body.category };
               User.updateOne({ _id: user._id }, { $push: { "business.prestations": prestation } }).then(
                 () => {
                   res.status(201).json({
@@ -315,9 +479,9 @@ exports.home = (req, res) => {
           "query": { "role": "business","business.role":"salloon" },
         }}
     ],
-    function(err,results) {
-      var saloons = results;
-      User.aggregate(
+function(err,results) {
+    var saloons = results;
+    User.aggregate(
         [
             { "$geoNear": {
                 "near": {
@@ -338,4 +502,138 @@ exports.home = (req, res) => {
     )
   }
 )
+}
+
+exports.search = (req, res) => {
+  User.find({
+    'role': 'business', $or: [
+      { 'saloonName': { '$regex': new RegExp(req.params.search, "i") } },
+      { 'firstName': { '$regex': new RegExp(req.params.search, "i") } },
+      { 'lastName': { '$regex': new RegExp(req.params.search, "i") } },
+      { 'business.prestations.name': { '$regex': new RegExp(req.params.search, "i") } }
+    ]
+  },
+    (err, results) => {
+      console.log(results);
+    }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+}
+
+
+exports.myBusinessProfile = function(req,res)
+{
+
+  User.findOne({ _id: req._id }, 'phoneNumber email firstName lastName profile_image address business.businessName',(err, user) => {
+      if (!user)
+      return res.status(404).json({ message: 'Profile record not found.' });
+      else {
+        res.status(200).json(user);
+      }
+    });
+  
+}
+
+  
+exports.getSalloon = function(req,res)
+{
+
+  User.findOne({ _id: req.params.id }).
+    populate({ path: 'feedbacks.owner', select: 'firstName' }).
+    populate({path: 'feedbacks.owner', select:'lastName'}).
+    populate({path: 'feedbacks.owner', select:'profile_image'}).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'Salloon record not found.' });
+      else {
+        user.firstName = req.body.firstName;
+        user.lastName = req.body.lastName;
+        user.email = req.body.email;
+          
+        User.updateOne({ _id: user._id }, user).then(
+          () => {
+
+            console.log(user);
+            res.status(201).json({
+              message: user.role + ' updated successfully!'
+            });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
+      }
+    });
+  
+}
+
+
+exports.getFreelance = function(req,res)
+{
+
+  User.findOne({ _id: req.params.id }).
+    populate({ path: 'feedbacks.owner', select: 'firstName' }).
+    populate({path: 'feedbacks.owner', select:'lastName'}).
+    populate({path: 'feedbacks.owner', select:'profile_image'}).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'Salloon record not found.' });
+      else {
+        user.firstName = req.body.firstName;
+        user.lastName = req.body.lastName;
+        user.email = req.body.email;
+          
+        User.updateOne({ _id: user._id }, user).then(
+          () => {
+
+            console.log(user);
+            res.status(201).json({
+              message: user.role + ' updated successfully!'
+            });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
+      }
+    });
+  
+}
+
+exports.addFeedBack = function(req,res,next)
+{
+    Offer.findOne({ _id: req.body.offerId },
+        (err, offer) => {
+            if (!offer)
+                return res.status(404).json({ status: false, message: 'Offer record not found.' });
+            else
+                {
+                    Offer.updateOne({_id: offer._id}, { $push: { feedbacks: { "rate": req.body.rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
+                      (result, error1) => {
+                        res.status(201).json({
+                          message: 'Feedback added successfully!'
+                        });
+                      }
+                    ).catch(
+                      (error2) => {
+                        res.status(400).json({
+                          error: error2
+                        });
+                      }
+                    );
+
+                }
+                        
+        });
 }

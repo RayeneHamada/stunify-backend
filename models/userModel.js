@@ -37,9 +37,7 @@ var userSchema = new mongoose.Schema({
       lastName: {
         type: String,
     },
-    saloonName :{
-        type:String
-      },
+    
       profile_image: {
         type:String  
       },
@@ -57,6 +55,9 @@ var userSchema = new mongoose.Schema({
             type: String,
             default:'switzerland'
         },
+        kbis: {
+            type:String,
+          },
         geolocation: GeoSchema,
           
         
@@ -70,16 +71,35 @@ var userSchema = new mongoose.Schema({
       business: {
       role: {
         type: String,
-      },
-      description: {
+        },
+
+        prestation_description: {
         type: String
-      },
+        },
+        about: {
+          type: String
+          },
+        businessName :{
+          type:String
+        },
       rate: {
         type: Number,
       },
+      catrgories: [{
+        type:mongoose.Schema.Types.ObjectId,
+            ref:"Categories"
+      }],
       mobility: {
         type: Boolean,
+        },
+      logo: {
+        type:String    
       },
+      space_pictures: [String],
+      owner_picture: {
+        type:String
+      },
+      
       prestations: [{
         name: {
           type: String
@@ -94,10 +114,8 @@ var userSchema = new mongoose.Schema({
           type: String
         },
         category: {
-          type: String
-        },
-        gender: {
-          type: String
+          type:mongoose.Schema.Types.ObjectId,
+            ref:"Categories"
         }
       }],
         schedule: [{
@@ -107,13 +125,35 @@ var userSchema = new mongoose.Schema({
           work: {
             type: Boolean,
           },
-          start_time: {
-            type:String
-          },
-          end_time: {
-            type:String
-          }
-      }]
+          slot:
+          [
+            {
+              start_time: {
+              type:String
+              },
+
+              end_time: {
+              type:String
+              }
+            }
+          ]
+      }],
+      feedbacks: [{
+        rate: {
+            type: Number,
+        },
+        feedback_content: {
+            type:String,
+        },
+        owner: {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Users"
+        },
+        created_at: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     }
       
 });

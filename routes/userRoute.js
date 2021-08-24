@@ -5,13 +5,25 @@ const main_controller = require('../controllers/userController');
 const imageUpload = require('../config/multerConfig').imageUpload;
 
 router.post('/sendSMS', main_controller.sendCode);
+router.post('/sendBusinessSMS', main_controller.sendBusinessCode);
 router.post('/verif', main_controller.verifCode);
 router.post('/completeSub', jwtHelper.verifyJwtToken, main_controller.completeSubscription);
 router.post('/completeBusinessSub', jwtHelper.verifyBusinessJwtToken, main_controller.completeBusinessSignup);
 
+
 router.post('/updateProfileImage',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateProfileImage);
+router.post('/updateLogo',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateLogo);
+router.post('/updateOwnerPicture',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateOwnerPicture);
 router.post('/updateAddress',jwtHelper.verifyJwtToken, main_controller.updateAddress);
-router.post('/addPrestation',jwtHelper.verifyBusinessJwtToken, main_controller.addPrestation);
+router.post('/addPrestation', jwtHelper.verifyBusinessJwtToken, main_controller.addPrestation);
+router.post('/updateDescription', jwtHelper.verifyBusinessJwtToken, main_controller.updateDescription);
+router.post('/updateSchedule', jwtHelper.verifyBusinessJwtToken, main_controller.updateSchedule);
+
+router.get('/search/:search', main_controller.search);
+router.get('/salloon/:id', main_controller.getSalloon);
+router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
+
+router.post('/addFeedBack', main_controller.addFeedBack);
 
 
 
