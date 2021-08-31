@@ -77,7 +77,10 @@ exports.sendBusinessCode = function(req,res,next)
                   user.business.catrgories = req.body.categories;
                   user.business.businessName = req.body.businessName;
                 user.business.role = req.body.role;
-                console.log(user);
+                  if (user.business.role == "freelance")
+                  {
+                  user.business.mobility = req.body.mobility;
+                  }
                   user.save((err, doc) => {  
                     if (!err)
                        {    
@@ -477,7 +480,11 @@ exports.home = (req, res) => {
             "spherical": true,
           "maxDistance": 1000000000,
           "query": { "role": "business","business.role":"salloon" },
-        }}
+       }
+       },
+       {
+        "$project": { "_id": 1, "address.city": 1, "rate":1,"business.businessName":1,"distance":1,"profile_image":1}
+      }
     ],
 function(err,results) {
     var saloons = results;
@@ -492,7 +499,10 @@ function(err,results) {
                 "spherical": true,
               "maxDistance": 1000000000,
               "query": { "role": "business","business.role":"freelance" },
-            }}
+            }},
+            {
+              "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1,"business.businessName":1,"distance":1,"profile_image":1}
+            }
         ],
         function(err,results) {
           var freelancers = results;
@@ -551,25 +561,8 @@ exports.getSalloon = function(req,res)
       if (!user)
         return res.status(404).json({ message: 'Salloon record not found.' });
       else {
-        user.firstName = req.body.firstName;
-        user.lastName = req.body.lastName;
-        user.email = req.body.email;
-          
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-
-            console.log(user);
-            res.status(201).json({
-              message: user.role + ' updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
-            res.status(400).json({
-              error: error
-            });
-          }
-        );
+        return res.status(200).json(user);
+        
       }
     });
   
@@ -585,27 +578,10 @@ exports.getFreelance = function(req,res)
     populate({path: 'feedbacks.owner', select:'profile_image'}).
     exec((err, user) => {
       if (!user)
-        return res.status(404).json({ message: 'Salloon record not found.' });
+        return res.status(404).json({ message: 'Freelance record not found.' });
       else {
-        user.firstName = req.body.firstName;
-        user.lastName = req.body.lastName;
-        user.email = req.body.email;
-          
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-
-            console.log(user);
-            res.status(201).json({
-              message: user.role + ' updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
-            res.status(400).json({
-              error: error
-            });
-          }
-        );
+        return res.status(200).json(user);
+        
       }
     });
   
