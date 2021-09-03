@@ -13,7 +13,6 @@ const path = require('path');
 
 
 
-var dir = path.join(__dirname, 'ressources/img');
 
 
 
@@ -24,10 +23,10 @@ const app = express();
 app.use(cors());
 app.use(passport.initialize())
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(express.static(dir));
 
  
 app.use(bodyParser.json());
+app.use(express.static('ressources'));
 
 //import routes
 const userRoute = require('./routes/userRoute');

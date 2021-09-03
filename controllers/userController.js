@@ -11,6 +11,8 @@ const serviceSid = process.env.SERVICE_SID;
 const client = require('twilio')(accountSid, authToken);
 const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
+const ObjectId = mongoose.Types.ObjectId;
+
 
 
 exports.sendCode = function(req,res,next)
@@ -587,18 +589,36 @@ exports.getFreelance = function(req,res)
   
 }
 
+
+exports.getPrestations = function(req,res)
+{
+
+
+  User.findOne({ _id: req.params.id }).
+    populate({ path: 'business.prestations.category', select: 'name' }).
+    exec((err, user) => {
+      if (!user)
+            return res.status(404).json({ status: false, message: 'Business record not found.' });
+        else
+      {
+          res.status(200).send(sortPrestations(user.business.prestations));
+            }
+    });
+  
+}
+
 exports.addFeedBack = function(req,res,next)
 {
-    Offer.findOne({ _id: req.body.offerId },
-        (err, offer) => {
-            if (!offer)
-                return res.status(404).json({ status: false, message: 'Offer record not found.' });
+    User.findOne({ _id: req.body.businessId },
+        (err, business) => {
+            if (!business)
+                return res.status(404).json({ status: false, message: 'Business record not found.' });
             else
                 {
-                    Offer.updateOne({_id: offer._id}, { $push: { feedbacks: { "rate": req.body.rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
+                    User.updateOne({_id: business._id}, { $push: { feedbacks: { "rate": req.body.rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
                       (result, error1) => {
                         res.status(201).json({
-                          message: 'Feedback added successfully!'
+                          message: 'Business added successfully!'
                         });
                       }
                     ).catch(
@@ -612,4 +632,21 @@ exports.addFeedBack = function(req,res,next)
                 }
                         
         });
+}
+
+function sortPrestations(prestations) {
+  let result = [];
+  prestations.forEach(element => {
+    if (result.indexOf(element.category) == -1) {
+      result.push({ "category": element.category, "prestations": [] });
+    }
+  });
+  result.forEach(category => {
+    prestations.forEach(prestation => {
+      if (prestation.category == category.category) {
+        category.prestations.push(prestation);
+      }
+    })
+  })
+  return result;
 }
