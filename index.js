@@ -2,6 +2,7 @@ require('dotenv').config();
 // require models
 require('./models/userModel');
 require('./models/categoryModel');
+require('./models/appointmentModel');
 
 
 require('./config/dbConfig');
@@ -26,14 +27,14 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
  
 app.use(bodyParser.json());
-app.use(express.static('ressources'));
 
 //import routes
 const userRoute = require('./routes/userRoute');
 const categoryRoute = require('./routes/categoryRoute');
+const appointmentRoute = require('./routes/appointmentRoute');
 //use routes
 app.use('/user', userRoute);
 app.use('/category', categoryRoute);
-
-
+app.use('/booking', appointmentRoute);
+app.use(express.static(path.join(__dirname, 'public')));
 module.exports = app;

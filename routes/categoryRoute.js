@@ -8,8 +8,4 @@ router.post('/rename', main_controller.renameCategory);
 router.get('/all', main_controller.fetchAllCategories);
 
 
-
-
-
-
 module.exports = router;

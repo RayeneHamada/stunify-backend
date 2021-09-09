@@ -12,7 +12,7 @@ const client = require('twilio')(accountSid, authToken);
 const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
-
+var moment = require('moment'); 
 
 
 exports.sendCode = function(req,res,next)
@@ -52,6 +52,7 @@ exports.sendCode = function(req,res,next)
             .catch(error => console.log(error));
 
 }
+
 
 exports.sendBusinessCode = function(req,res,next)
 {
@@ -176,6 +177,8 @@ exports.verifCode = function(req,res,next)
 
   })
 }
+
+
 exports.completeSubscription = function(req,res)
 {
 
@@ -252,7 +255,6 @@ exports.completeBusinessSignup = async function(req,res,next)
 }
 
 
-
 exports.updateProfileImage = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -277,7 +279,8 @@ exports.updateProfileImage = (req, res) => {
             }
     });
 }
-  
+
+
 exports.updateLogo = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -302,6 +305,7 @@ exports.updateLogo = (req, res) => {
             }
     });
 }
+
 
 exports.updateOwnerPicture = (req, res) => {
   User.findOne({ _id: req._id },
@@ -328,6 +332,7 @@ exports.updateOwnerPicture = (req, res) => {
     });
 }
 
+
 exports.addSpacePhotos = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -352,6 +357,7 @@ exports.addSpacePhotos = (req, res) => {
             }
     });
 }
+
 
 exports.updateDescription = (req, res) => {
   User.findOne({ _id: req._id },
@@ -378,6 +384,7 @@ exports.updateDescription = (req, res) => {
             }
     });
 }
+
 
 exports.updateSchedule = (req, res) => {
   User.findOne({ _id: req._id },
@@ -443,7 +450,8 @@ exports.updateAddress = async (req, res) => {
           }
       });
 }
-  
+
+
 exports.addPrestation = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -468,7 +476,8 @@ exports.addPrestation = (req, res) => {
             }
     });
 }
-  
+
+
 exports.home = (req, res) => {
   
    User.aggregate(
@@ -515,6 +524,7 @@ function(err,results) {
   }
 )
 }
+
 
 exports.search = (req, res) => {
   User.find({
@@ -607,6 +617,7 @@ exports.getPrestations = function(req,res)
   
 }
 
+
 exports.addFeedBack = function(req,res,next)
 {
     User.findOne({ _id: req.body.businessId },
@@ -634,6 +645,7 @@ exports.addFeedBack = function(req,res,next)
         });
 }
 
+
 function sortPrestations(prestations) {
   let result = [];
   prestations.forEach(element => {
@@ -649,4 +661,71 @@ function sortPrestations(prestations) {
     })
   })
   return result;
+}
+
+
+exports.checkAvailability = function(req,res)
+{
+
+  User.findOne({ _id: req.params.id }).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'Freelance record not found.' });
+      else {
+        console.log(user.business.schedule);
+        
+      }
+    });
+  
+}
+
+
+exports.availableSlots = function (req, res) {
+  User.findOne({ _id: req.params.business }).
+  populate('business.appointments').
+  exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'Freelance record not found.' });
+      else {
+        let duration = req.params.duration,
+          date = new Date(req.params.year, req.params.month - 1, req.params.day, 0, 0, 0, 0),
+          day = date.getDay(),
+          schedule_day = user.business.schedule[day],
+          isWorkDay = schedule_day.work,
+          slots = schedule_day.slot,
+          availabilities = [];
+        appointments = user.business.appointments;
+        if (isWorkDay) {
+          slots.forEach((slot) => {
+          
+            let start_time_hour = slot.start_time.split(":")[0],
+              start_time_minute = slot.start_time.split(":")[1],
+              start_time = new Date(req.params.year, req.params.month, req.params.day, start_time_hour, start_time_minute, 0, 0),
+              end_time_hour = slot.end_time.split(":")[0],
+              end_time_minute = slot.end_time.split(":")[1],
+              end_time = new Date(req.params.year, req.params.month, req.params.day, end_time_hour, end_time_minute, 0, 0),
+              aux_time = moment(start_time).add(duration, 'minutes').toDate(),
+              isValid = true;
+            while (moment(aux_time).isBefore(end_time)) {
+              appointments.forEach((appointment) => {
+                isValid = true;
+                if ((moment(aux_time).isAfter(appointment.start_date_time) && moment(start_time).isBefore(appointment.start_date_time))
+                || (moment(start_time).isBefore(appointment.end_date_time) && (moment(aux_time).isAfter(appointment.end_date_time)))) {
+                  isValid = false;
+                }
+              })
+              if (isValid) {
+              availabilities.push({ start: start_time, end: aux_time });
+              }
+              start_time = aux_time;
+              aux_time = moment(start_time).add(duration, 'minutes').toDate();
+              
+            }
+          
+          })
+        }
+        res.send(availabilities);
+      }
+    });
+  
 }

@@ -66,7 +66,14 @@ var userSchema = new mongoose.Schema({
           type: String,
           default: 'user'
       },
-        
+          
+      personal: {
+          appointments: [{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Appointments"
+          }],
+          },
+          
   
       business: {
       role: {
@@ -137,23 +144,27 @@ var userSchema = new mongoose.Schema({
               }
             }
           ]
-      }],
-      feedbacks: [{
-        rate: {
-            type: Number,
-        },
-        feedback_content: {
-            type:String,
-        },
-        owner: {
+        }],
+        appointments: [{
             type:mongoose.Schema.Types.ObjectId,
-            ref:"Users"
-        },
-        created_at: {
-            type: Date,
-            default: Date.now
-        }
-    }],
+            ref:"Appointments"
+          }],
+          feedbacks: [{
+            rate: {
+                type: Number,
+            },
+            feedback_content: {
+                type:String,
+            },
+            owner: {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Users"
+            },
+            created_at: {
+                type: Date,
+                default: Date.now
+            }
+        }],
     }
       
 });
