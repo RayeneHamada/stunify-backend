@@ -24,6 +24,9 @@ var appointmentSchema = new mongoose.Schema({
         payment_status : {
             type:String
         },
+        status : {
+            type:String
+        },
 
   });
 

@@ -120,3 +120,65 @@ exports.availableSlots = function (req, res) {
       });
     
   }
+
+
+exports.dashboard = function(req,res)
+{
+
+  User.findOne({ _id: req._id }, 'business.appointments').
+    populate({ path: 'business.appointments'}).
+    populate({ path: 'business.appointments.personal', select: 'firstName' }).
+    populate({path: 'business.appointments.personal', select:'lastName'}).
+    populate({path: 'business.appointments.personal', select:'profile_image'}).
+    exec((err, result) => {
+      if (!result)
+        return res.status(404).json({ message: 'Salloon record not found.' });
+      else {
+        var appointments = result.business.appointments;
+        console.log(appointments);
+        let done = [];
+        let todo = [];
+        let doing = [];
+        appointments.forEach((appointment) => {
+          if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
+            done.push(appointment);
+          }
+          if (moment(new Date(appointment.end_date_time)).isAfter(new Date()) && moment(new Date(appointment.start_date_time)).isBefore(new Date())) {
+            doing.push(appointment);
+          }
+          if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
+            todo.push(appointment);
+          }
+        })
+        return res.status(200).json({ "todo": todo, "doing":doing,"done":done});
+        
+      }
+    });
+  
+}
+/* A refaire */
+exports.appointmentPerDay = function(req,res)
+{
+
+  User.findOne({ _id: req._id }, 'business.appointments').
+    populate({ path: 'business.appointments'}).
+    populate({ path: 'business.appointments.personal', select: 'firstName' }).
+    populate({path: 'business.appointments.personal', select:'lastName'}).
+    populate({path: 'business.appointments.personal', select:'profile_image'}).
+    exec((err, results) => {
+      if (!results)
+        return res.status(404).json({ message: 'Salloon record not found.' });
+      else {
+        let result = [];
+        let appointments = results.business.appointments;
+        appointments.forEach((appointment) => {
+          if (moment(new Date(req.body.date).setHours(0,0,0,0)).isSame(new Date(appointment.start_date_time).setHours(0,0,0,0))) {
+            result.push(appointment);
+          }
+        })
+        return res.status(200).json(result);
+        
+      }
+    });
+  
+}
