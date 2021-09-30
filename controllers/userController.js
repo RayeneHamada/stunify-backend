@@ -53,6 +53,82 @@ exports.sendCode = function(req,res,next)
 
 }
 
+exports.sendCodeTest = function (req, res) {
+
+                User.findOne({ phoneNumber: req.body.phoneNumber },
+                  (err, user) => {
+                      if (!user)
+                      {
+                        console.log('ahla1');
+                        var user = new User();
+                        user.activated = true;
+                      user.phoneNumber = req.body.phoneNumber;
+                      user.save((err, doc) => {  
+                        if (!err)
+                           {    
+                            return res.json({ operatiton: "signup", verified: true,"token": doc.generateJwt() });
+                            
+                        }
+                        else {
+                          return res.json({ 'error': err });
+                        }
+                      });
+                      }
+                      else
+                      {
+                        console.log('ahla');
+                        
+                            if(user.profile_image)
+                          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName, "profile_image": user.profile_image });
+                        else
+                        res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName});
+                              
+                            
+                          }
+                  });
+      
+}
+exports.sendBusinessCodeTest = function (req, res) {
+
+  User.findOne({ phoneNumber: req.body.phoneNumber },
+    (err, user) => {
+        if (!user)
+        {
+          var user = new User();
+          user.activated = true;
+          user.role = "business";
+          user.phoneNumber = req.body.phoneNumber;
+          user.business.catrgories = req.body.categories;
+          user.business.businessName = req.body.businessName;
+        user.business.role = req.body.role;
+          if (user.business.role == "freelance")
+          {
+          user.business.mobility = req.body.mobility;
+          }
+        user.save((err, doc) => {  
+          if (!err)
+             {    
+              return res.json({ operatiton: "signup", verified: true,"token": doc.generateJwt() });
+              
+              }
+        });
+        }
+        else
+            {
+              if(user.profile_image)
+            res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName, "profile_image": user.profile_image });
+          else
+          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(),"firstName":user.firstName,"lastName":user.lastName});
+                
+              
+            }
+    });
+
+}
+
+
+
+
 
 exports.sendBusinessCode = function(req,res,next)
 {
@@ -195,13 +271,13 @@ exports.completeSubscription = function(req,res)
               User.updateOne({_id: user._id}, user).then(
                 () => {
 
-                  console.log(user);
                   res.status(201).json({
                     message: user.role+' updated successfully!'
                   });
                 }
               ).catch(
                 (error) => {
+                  console.log(error);
                   res.status(400).json({
                     error: error
                   });
@@ -252,6 +328,48 @@ exports.completeBusinessSignup = async function(req,res,next)
                       );
                     }
             });   
+}
+
+
+exports.getProfileForUpdate = (req, res) => {
+  User.findById(req._id, "firstName lastName phoneNumber email profile_image address", (err, doc) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    else {
+      return res.status(200).send(doc);
+    }
+  })
+}
+
+
+exports.updateUserProfile = (req, res) => {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+        if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+        else
+            {
+              user.firsName = req.body.firsName;
+              user.lastName = req.body.lastName;
+              user.email = req.body.email;
+              user.phoneNumber = req.body.phoneNumber;
+              user.business.about = req.body.about;
+              User.updateOne({_id: user._id}, user).then(
+                () => {
+                  res.status(201).json({
+                    message: 'User updated successfully!'
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+    });
 }
 
 
@@ -729,3 +847,5 @@ exports.availableSlots = function (req, res) {
     });
   
 }
+
+

@@ -29,7 +29,7 @@ var userSchema = new mongoose.Schema({
   
       email: {
         type: String,
-        lowercase: true
+        lowercase: true,
       },
       firstName: {
           type: String,
@@ -165,7 +165,11 @@ var userSchema = new mongoose.Schema({
                 default: Date.now
             }
         }],
-    }
+    },
+    created_at: {
+      type: Date,
+      default: Date.now
+  }
       
 });
 userSchema.index({ "address.geolocation": "2dsphere" });
