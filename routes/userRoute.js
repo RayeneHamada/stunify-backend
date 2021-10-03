@@ -16,6 +16,7 @@ router.post('/updateProfileImage',[imageUpload.single('image'),jwtHelper.verifyJ
 router.post('/updateLogo',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateLogo);
 router.post('/updateOwnerPicture',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateOwnerPicture);
 router.post('/updateAddress',jwtHelper.verifyJwtToken, main_controller.updateAddress);
+router.post('/updateAddressReverse', main_controller.updateAddressReverse);
 router.post('/addPrestation', jwtHelper.verifyBusinessJwtToken, main_controller.addPrestation);
 router.post('/updateDescription', jwtHelper.verifyBusinessJwtToken, main_controller.updateDescription);
 router.post('/updateSchedule', jwtHelper.verifyBusinessJwtToken, main_controller.updateSchedule);

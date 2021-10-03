@@ -88,6 +88,7 @@ exports.sendCodeTest = function (req, res) {
                   });
       
 }
+
 exports.sendBusinessCodeTest = function (req, res) {
 
   User.findOne({ phoneNumber: req.body.phoneNumber },
@@ -125,10 +126,6 @@ exports.sendBusinessCodeTest = function (req, res) {
     });
 
 }
-
-
-
-
 
 exports.sendBusinessCode = function(req,res,next)
 {
@@ -175,7 +172,6 @@ exports.sendBusinessCode = function(req,res,next)
             .catch(error => console.log(error));
 
 }
-
 
 exports.verifCode = function(req,res,next)
 {
@@ -254,7 +250,6 @@ exports.verifCode = function(req,res,next)
   })
 }
 
-
 exports.completeSubscription = function(req,res)
 {
 
@@ -287,7 +282,6 @@ exports.completeSubscription = function(req,res)
     });   
   
 }
-
 
 exports.completeBusinessSignup = async function(req,res,next)
 {
@@ -330,7 +324,6 @@ exports.completeBusinessSignup = async function(req,res,next)
             });   
 }
 
-
 exports.getProfileForUpdate = (req, res) => {
   User.findById(req._id, "firstName lastName phoneNumber email profile_image address", (err, doc) => {
     if (err) {
@@ -341,7 +334,6 @@ exports.getProfileForUpdate = (req, res) => {
     }
   })
 }
-
 
 exports.updateUserProfile = (req, res) => {
   User.findOne({ _id: req._id },
@@ -372,7 +364,6 @@ exports.updateUserProfile = (req, res) => {
     });
 }
 
-
 exports.updateProfileImage = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -397,7 +388,6 @@ exports.updateProfileImage = (req, res) => {
             }
     });
 }
-
 
 exports.updateLogo = (req, res) => {
   User.findOne({ _id: req._id },
@@ -424,7 +414,6 @@ exports.updateLogo = (req, res) => {
     });
 }
 
-
 exports.updateOwnerPicture = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -450,7 +439,6 @@ exports.updateOwnerPicture = (req, res) => {
     });
 }
 
-
 exports.addSpacePhotos = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -475,7 +463,6 @@ exports.addSpacePhotos = (req, res) => {
             }
     });
 }
-
 
 exports.updateDescription = (req, res) => {
   User.findOne({ _id: req._id },
@@ -503,7 +490,6 @@ exports.updateDescription = (req, res) => {
     });
 }
 
-
 exports.updateSchedule = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
@@ -528,7 +514,6 @@ exports.updateSchedule = (req, res) => {
             }
     });
 }
-
 
 exports.updateAddress = async (req, res) => {
   
@@ -569,6 +554,43 @@ exports.updateAddress = async (req, res) => {
       });
 }
 
+exports.updateAddressReverse = async (req, res) => {
+  
+  const loc = await geocoder.reverse({
+    lat: req.body.lat,
+    lon: req.body.lon,
+  });
+  res.send(loc);
+    User.findOne({ _id: req._id },
+      (err, user) => {
+          if (!user)
+              return res.status(404).json({ status: false, message: 'User record not found.' });
+          else
+          {
+                        
+            var address = { "street": loc[0].streetName, "zip": loc[0].zipcode, "city": loc[0].city};
+            address.geolocation = {
+              coordinates: [req.body.lat,req.body.lon],
+            };
+            user.address = address;
+            console.log(user);
+
+            User.updateOne({ _id: user._id }, user).then(
+              () => {
+                    res.status(201).json({
+                      message: 'User address updated successfully!'
+                    });
+                  }
+                ).catch(
+                  (error) => {
+                    res.status(400).json({
+                      error: error
+                    });
+                  }
+                );
+          }
+      });
+}
 
 exports.addPrestation = (req, res) => {
   User.findOne({ _id: req._id },
@@ -594,7 +616,6 @@ exports.addPrestation = (req, res) => {
             }
     });
 }
-
 
 exports.home = (req, res) => {
   
@@ -643,7 +664,6 @@ function(err,results) {
 )
 }
 
-
 exports.search = (req, res) => {
   User.find({
     'role': 'business', $or: [
@@ -665,7 +685,6 @@ exports.search = (req, res) => {
               );
 }
 
-
 exports.myBusinessProfile = function(req,res)
 {
 
@@ -678,7 +697,6 @@ exports.myBusinessProfile = function(req,res)
     });
   
 }
-
   
 exports.getSalloon = function(req,res)
 {
@@ -698,7 +716,6 @@ exports.getSalloon = function(req,res)
   
 }
 
-
 exports.getFreelance = function(req,res)
 {
 
@@ -717,7 +734,6 @@ exports.getFreelance = function(req,res)
   
 }
 
-
 exports.getPrestations = function(req,res)
 {
 
@@ -734,7 +750,6 @@ exports.getPrestations = function(req,res)
     });
   
 }
-
 
 exports.addFeedBack = function(req,res,next)
 {
@@ -763,7 +778,6 @@ exports.addFeedBack = function(req,res,next)
         });
 }
 
-
 function sortPrestations(prestations) {
   let result = [];
   prestations.forEach(element => {
@@ -781,7 +795,6 @@ function sortPrestations(prestations) {
   return result;
 }
 
-
 exports.checkAvailability = function(req,res)
 {
 
@@ -796,7 +809,6 @@ exports.checkAvailability = function(req,res)
     });
   
 }
-
 
 exports.availableSlots = function (req, res) {
   User.findOne({ _id: req.params.business }).
