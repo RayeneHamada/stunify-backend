@@ -139,6 +139,8 @@ exports.dashboard = function(req,res)
         let done = [];
         let todo = [];
         let doing = [];
+        let dayDuration = 0;
+        let weekDuration = 0;
         appointments.forEach((appointment) => {
           if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
             done.push(appointment);
@@ -149,8 +151,14 @@ exports.dashboard = function(req,res)
           if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
             todo.push(appointment);
           }
+          if (moment(new Date(appointment.start_date_time)).week() == moment().week()) {
+            weekDuration += appointment.duration;
+          }
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date())) {
+            dayDuration += appointment.duration;
+          }  
         })
-        return res.status(200).json({ "todo": todo, "doing":doing,"done":done});
+        return res.status(200).json({ "todo": todo, "doing": doing, "done": done, "today": dayDuration,"week":weekDuration});
         
       }
     });

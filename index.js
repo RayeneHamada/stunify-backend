@@ -3,6 +3,8 @@ require('dotenv').config();
 require('./models/userModel');
 require('./models/categoryModel');
 require('./models/appointmentModel');
+require('./models/notificationModel');
+require('./models/subscriptionModel');
 
 
 require('./config/dbConfig');
@@ -32,9 +34,11 @@ app.use(bodyParser.json());
 const userRoute = require('./routes/userRoute');
 const categoryRoute = require('./routes/categoryRoute');
 const appointmentRoute = require('./routes/appointmentRoute');
+const subscriptionRoute = require('./routes/subscriptionRoute');
 //use routes
 app.use('/user', userRoute);
 app.use('/category', categoryRoute);
 app.use('/booking', appointmentRoute);
+app.use('/subscription', subscriptionRoute);
 app.use(express.static(path.join(__dirname, 'public')));
 module.exports = app;

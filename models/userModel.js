@@ -75,7 +75,11 @@ var userSchema = new mongoose.Schema({
           },
           
   
-      business: {
+    business: {
+      subscription: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Subscriptions"
+      },   
       role: {
         type: String,
         },
