@@ -28,7 +28,7 @@ router.get('/freelance/:id', main_controller.getFreelance);
 router.get('/prestations/:id', main_controller.getPrestations);
 router.get('/test', main_controller.testNotif);
 router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
-router.get('/checkAvailability/:id', main_controller.checkAvailability);
+router.get('/myProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 
 router.post('/addFeedBack', main_controller.addFeedBack);

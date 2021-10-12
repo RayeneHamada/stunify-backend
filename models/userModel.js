@@ -14,8 +14,6 @@ const GeoSchema = new mongoose.Schema({
 
 var userSchema = new mongoose.Schema({
 
-
-
     phoneNumber: {
       type: String,
       required: " Phone  number can\'t be empty",
@@ -55,9 +53,7 @@ var userSchema = new mongoose.Schema({
             type: String,
             default:'switzerland'
         },
-        kbis: {
-            type:String,
-          },
+        
         geolocation: GeoSchema,
           
         
@@ -75,7 +71,10 @@ var userSchema = new mongoose.Schema({
           },
           
   
-    business: {
+  business: {
+      kbis: {
+        type:String,
+      },
       subscription: {
         type:mongoose.Schema.Types.ObjectId,
         ref:"Subscriptions"

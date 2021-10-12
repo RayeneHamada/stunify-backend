@@ -294,7 +294,7 @@ exports.completeSubscription = function(req,res)
 exports.completeBusinessSignup = async function(req,res)
 {
           const loc = await geocoder.geocode({
-            address: req.body.address.kbis + " " + req.body.address.street + " " + req.body.address.city,
+            address: req.body.address.street + " " + req.body.address.city,
             //country: "Switzerland",
             country:req.body.country,
             zipcode: req.body.address.zip
@@ -308,7 +308,8 @@ exports.completeBusinessSignup = async function(req,res)
                   user.email = req.body.email;
                   user.firstName = req.body.firstName;
                   user.lastName = req.body.lastName;
-                  var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city, "kbis":req.body.address.kbis};
+                  user.business.kbis = req.body.kbis;
+                  var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city};
                   address.geolocation = {
                     coordinates: [loc[0].latitude,loc[0].longitude],
                   };
@@ -316,7 +317,6 @@ exports.completeBusinessSignup = async function(req,res)
                       User.updateOne({_id: user._id}, user).then(
                         () => {
 
-                          console.log(user);
                           res.status(201).json({
                             message: user.business.role+' updated successfully!'
                           });
@@ -696,7 +696,20 @@ exports.search = (req, res) => {
 exports.myBusinessProfile = function(req,res)
 {
 
-  User.findOne({ _id: req._id }, 'phoneNumber email firstName lastName profile_image address business.businessName',(err, user) => {
+  User.findOne({ _id: req._id }, 'business.prestation_description business.about business.mobility business.prestations business.schedule business.businessName ',(err, user) => {
+      if (!user)
+      return res.status(404).json({ message: 'Profile record not found.' });
+      else {
+        res.status(200).json(user);
+      }
+    });
+  
+}
+
+exports.myProfile = function(req,res)
+{
+
+  User.findOne({ _id: req._id }, 'phoneNumber email firstName lastName profile_image business.kbis',(err, user) => {
       if (!user)
       return res.status(404).json({ message: 'Profile record not found.' });
       else {
@@ -817,20 +830,6 @@ function sortPrestations(prestations) {
   return result;
 }
 
-exports.checkAvailability = function(req,res)
-{
-
-  User.findOne({ _id: req.params.id }).
-    exec((err, user) => {
-      if (!user)
-        return res.status(404).json({ message: 'Freelance record not found.' });
-      else {
-        console.log(user.business.schedule);
-        
-      }
-    });
-  
-}
 
 exports.availableSlots = function (req, res) {
   User.findOne({ _id: req.params.business }).
