@@ -11,9 +11,9 @@ exports.fetchAll = function(req,res)
 {
 
     Subscription.find({ receiver: req._id }).
-    populate({ path: 'receiver', select: 'firstName' }).
-    populate({path: 'receiver', select:'lastName'}).
-    populate({path: 'receiver', select:'profile_image'}).
+    populate({ path: 'sender', select: 'firstName' }).
+    populate({path: 'sender', select:'lastName'}).
+    populate({path: 'sender', select:'profile_image'}).
         exec((err, doc) => {
     
     if (err) {
