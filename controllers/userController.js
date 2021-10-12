@@ -1,6 +1,7 @@
   
 const mongoose = require('mongoose'),
 User = mongoose.model('Users');
+Notification = mongoose.model('Notifications');
 const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
@@ -766,10 +767,24 @@ exports.addFeedBack = function(req,res)
                 return res.status(404).json({ status: false, message: 'Business record not found.' });
             else
                 {
-                    User.updateOne({_id: business._id}, { $push: { feedbacks: { "rate": req.body.rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
+              var rate = (req.body.quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
+                    User.updateOne({_id: business._id}, { $push: { feedbacks: { "quality": req.body.quality,"atmosphere": req.body.atmosphere,"cleanliness": req.body.cleanliness,"reception": req.body.reception,"rate": rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
                       (result, error1) => {
-                        res.status(201).json({
-                          message: 'Business added successfully!'
+                        notification = new Notification();
+                        notification.sender = req._id;
+                        notification.receiver = req.body.businessId;
+                        notification.type = 'feedback';
+                        notification.content = 'vous a noté' + rate + " étoiles";
+                        user.save((err, doc) => {  
+                          if (!err)
+                             {    
+                              return res.status(201).json({
+                                message: 'Feedback added successfully!'
+                              });                              
+                          }
+                          else {
+                            return res.json({ 'error': err });
+                          }
                         });
                       }
                     ).catch(

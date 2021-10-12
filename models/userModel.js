@@ -153,7 +153,19 @@ var userSchema = new mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref:"Appointments"
           }],
-          feedbacks: [{
+        feedbacks: [{
+            reception: {
+              type:Number
+            },
+            cleanliness: {
+              type:Number
+            },
+            atmosphere: {
+              type:Number
+            },
+            quality: {
+              type:Number
+            },
             rate: {
                 type: Number,
             },

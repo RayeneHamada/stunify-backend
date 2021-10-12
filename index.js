@@ -35,10 +35,12 @@ const userRoute = require('./routes/userRoute');
 const categoryRoute = require('./routes/categoryRoute');
 const appointmentRoute = require('./routes/appointmentRoute');
 const subscriptionRoute = require('./routes/subscriptionRoute');
+const notificationRoute = require('./routes/notificationRoute');
 //use routes
 app.use('/user', userRoute);
 app.use('/category', categoryRoute);
 app.use('/booking', appointmentRoute);
 app.use('/subscription', subscriptionRoute);
+app.use('/notification', notificationRoute);
 app.use(express.static(path.join(__dirname, 'public')));
 module.exports = app;
