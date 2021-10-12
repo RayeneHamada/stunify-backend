@@ -1,6 +1,7 @@
   
 const mongoose = require('mongoose'),
 User = mongoose.model('Users');
+const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
 const bcrypt = require('bcryptjs');
@@ -13,9 +14,15 @@ const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
 var moment = require('moment'); 
-
-
-exports.sendCode = function(req,res,next)
+var admin = require("firebase-admin");
+const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-ca0c5-firebase-adminsdk-3n4rl-a4e95e9ac0.json');
+console.log(pathToServiceAccount);
+const serviceAccount = require(pathToServiceAccount);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://stunify-c28a5-default-rtdb.europe-west1.firebasedatabase.app"
+});
+exports.sendCode = function(req,res)
 {
     client.verify.services(serviceSid)
              .verifications
@@ -127,7 +134,7 @@ exports.sendBusinessCodeTest = function (req, res) {
 
 }
 
-exports.sendBusinessCode = function(req,res,next)
+exports.sendBusinessCode = function(req,res)
 {
     client.verify.services(serviceSid)
              .verifications
@@ -173,7 +180,7 @@ exports.sendBusinessCode = function(req,res,next)
 
 }
 
-exports.verifCode = function(req,res,next)
+exports.verifCode = function(req,res)
 {
   console.log('verification now');
 
@@ -283,7 +290,7 @@ exports.completeSubscription = function(req,res)
   
 }
 
-exports.completeBusinessSignup = async function(req,res,next)
+exports.completeBusinessSignup = async function(req,res)
 {
           const loc = await geocoder.geocode({
             address: req.body.address.kbis + " " + req.body.address.street + " " + req.body.address.city,
@@ -751,7 +758,7 @@ exports.getPrestations = function(req,res)
   
 }
 
-exports.addFeedBack = function(req,res,next)
+exports.addFeedBack = function(req,res)
 {
     User.findOne({ _id: req.body.businessId },
         (err, business) => {
@@ -858,6 +865,27 @@ exports.availableSlots = function (req, res) {
       }
     });
   
+}
+
+exports.testNotif = (req, res) => {
+  const message = {
+    notification: {
+      title: 'New Messaeg',
+      body: 'test test 12 12',
+    },
+    topic:"general"
+  }
+  sendPushNotification(message)
+}
+
+function sendPushNotification(message) {
+  admin.messaging().send(message)
+    .then((response) => {
+      console.log('Scuccessfully sent message:', response);
+    })
+    .catch((error) => {
+      console.log('Error sending message:', error);
+  })
 }
 
 

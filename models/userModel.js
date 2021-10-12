@@ -187,7 +187,7 @@ userSchema.path('email').validate((val) => {
 
 
 userSchema.methods.generateJwt = function () {
-    return jwt.sign({ _id: this._id, role: this.role},
+    return jwt.sign({ _id: this._id, role: this.role, profilePicture: this.profile_image, firstName:this.firstName, lastName:this.lastName, email:this.email},
         process.env.JWT_SECRET,
     {
         expiresIn: process.env.JWT_EXP
