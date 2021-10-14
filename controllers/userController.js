@@ -332,16 +332,6 @@ exports.completeBusinessSignup = async function(req,res)
             });   
 }
 
-exports.getProfileForUpdate = (req, res) => {
-  User.findById(req._id, "firstName lastName phoneNumber email profile_image address", (err, doc) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-    else {
-      return res.status(200).send(doc);
-    }
-  })
-}
 
 exports.updateUserProfile = (req, res) => {
   User.findOne({ _id: req._id },
@@ -788,7 +778,7 @@ exports.addFeedBack = function(req,res)
                         notification.receiver = req.body.businessId;
                         notification.type = 'feedback';
                         notification.content = 'vous a noté' + rate + " étoiles";
-                        user.save((err, doc) => {  
+                        notification.save((err, doc) => {  
                           if (!err)
                              {    
                               return res.status(201).json({

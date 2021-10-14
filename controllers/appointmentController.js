@@ -2,8 +2,8 @@
 const mongoose  = require('mongoose'),
 Appointment = mongoose.model('Appointments');
 User = mongoose.model('Users');
+Notification = mongoose.model('Notifications');
 var moment = require('moment'); 
-const { ConversationList } = require('twilio/lib/rest/conversations/v1/conversation');
 const ObjectId = mongoose.Types.ObjectId;
 
 
@@ -36,7 +36,22 @@ exports.book = function(req,res,next)
                                         {
                                                 User.updateOne({_id: req._id}, { $push: { "personal.appointments": new mongoose.mongo.ObjectId(doc._id)} }).then(
                                                   (result, error1) => {
-                                                    res.status(201).json(doc);
+                                                    notification = new Notification();
+                                                    notification.sender = req._id;
+                                                    notification.receiver = req.body.businessId;
+                                                    notification.type = 'appointment';
+                                                    notification.content = 'a réservé un rendez-vous';
+                                                    notification.save((err, doc) => {  
+                                                      if (!err)
+                                                        {    
+                                                          return res.status(201).json({
+                                                            message: 'Appointment added successfully!'
+                                                          });                              
+                                                      }
+                                                      else {
+                                                        return res.json({ 'error': err });
+                                                      }
+                                                    });
                                                   }
                                                 ).catch(
                                                   (error2) => {
@@ -45,7 +60,6 @@ exports.book = function(req,res,next)
                                                     });
                                                   }
                                                 );
-                            
                                             }
                                                     
                                     });

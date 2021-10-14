@@ -23,7 +23,6 @@ router.post('/updateSchedule', jwtHelper.verifyBusinessJwtToken, main_controller
 
 router.get('/search/:search', main_controller.search);
 router.get('/salloon/:id', main_controller.getSalloon);
-router.get('/getProfileForUpdate',jwtHelper.verifyJwtToken, main_controller.getProfileForUpdate);
 router.get('/freelance/:id', main_controller.getFreelance);
 router.get('/prestations/:id', main_controller.getPrestations);
 router.get('/test', main_controller.testNotif);
