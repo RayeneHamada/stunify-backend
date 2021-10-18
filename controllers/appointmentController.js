@@ -84,23 +84,22 @@ exports.availableSlots = function (req, res) {
       else {
         if(user.business.schedule.length > 0)
         {let duration = req.params.duration,
-          date = new Date(req.params.year, req.params.month - 1, req.params.day, 0, 0, 0, 0),
+          date = new Date(req.params.year, req.params.month-1, req.params.day),
           day = date.getDay(),
           schedule_day = user.business.schedule[day],
           isWorkDay = schedule_day.work,
           slots = schedule_day.slot,
           availabilities = [];
-        appointments = user.business.appointments;
-
+          appointments = user.business.appointments;
         if (isWorkDay) {
           slots.forEach((slot) => {
 
             let start_time_hour = slot.start_time.split(":")[0],
               start_time_minute = slot.start_time.split(":")[1],
-              start_time = new Date(req.params.year, req.params.month, req.params.day, start_time_hour, start_time_minute, 0, 0),
+              start_time = new Date(req.params.year, req.params.month-1, req.params.day, start_time_hour, start_time_minute, 0, 0),
               end_time_hour = slot.end_time.split(":")[0],
               end_time_minute = slot.end_time.split(":")[1],
-              end_time = new Date(req.params.year, req.params.month, req.params.day, end_time_hour, end_time_minute, 0, 0),
+              end_time = new Date(req.params.year, req.params.month-1, req.params.day, end_time_hour, end_time_minute, 0, 0),
               aux_time = moment(start_time).add(duration, 'minutes').toDate(),
               isValid = true;
 
