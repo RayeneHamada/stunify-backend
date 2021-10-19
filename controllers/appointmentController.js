@@ -133,16 +133,17 @@ exports.availableSlots = function (req, res) {
 exports.dashboard = function (req, res) {
 
   User.findOne({ _id: req._id }, 'business.appointments').
-    populate({ path: 'business.appointments' }).
-    populate({ path: 'business.appointments.personal', select: 'firstName' }).
-    populate({ path: 'business.appointments.personal', select: 'lastName' }).
-    populate({ path: 'business.appointments.personal', select: 'profile_image' }).
+    populate({
+      path: 'business.appointments',
+      populate: 
+        [{ path: 'personal' , select: 'firstName lastName profile_image'}
+        ]
+     }).
     exec((err, result) => {
       if (!result)
         return res.status(404).json({ message: 'Salloon record not found.' });
       else {
         var appointments = result.business.appointments;
-        console.log(appointments);
         let done = [];
         let todo = [];
         let doing = [];
@@ -175,10 +176,12 @@ exports.dashboard = function (req, res) {
 exports.appointmentPerDay = function (req, res) {
 
   User.findOne({ _id: req._id }, 'business.appointments').
-    populate({ path: 'business.appointments' }).
-    populate({ path: 'business.appointments.personal', select: 'firstName' }).
-    populate({ path: 'business.appointments.personal', select: 'lastName' }).
-    populate({ path: 'business.appointments.personal', select: 'profile_image' }).
+  populate({
+    path: 'business.appointments',
+    populate: 
+      [{ path: 'personal' , select: 'firstName lastName profile_image'}
+      ]
+   }).
     exec((err, results) => {
       if (!results)
         return res.status(404).json({ message: 'Salloon record not found.' });
