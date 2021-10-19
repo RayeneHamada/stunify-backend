@@ -108,7 +108,7 @@ exports.availableSlots = function (req, res) {
                     || (moment(start_time).isBefore(appointment.end_date_time) && (moment(aux_time).isAfter(appointment.end_date_time)))
                     || (moment(start_time).isSame(appointment.start_date_time))
                     || ((moment(aux_time).isSame(appointment.end_date_time)))
-                    || (moment(start_time).isBefore(moment()))) {
+                    || (moment(start_time).isBefore(Date.now()))) {
                     isValid = false;
                   }
                 })
