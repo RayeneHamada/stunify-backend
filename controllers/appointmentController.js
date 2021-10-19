@@ -107,12 +107,12 @@ exports.availableSlots = function (req, res) {
                   if ((moment(aux_time).isAfter(appointment.start_date_time) && moment(start_time).isBefore(appointment.start_date_time))
                     || (moment(start_time).isBefore(appointment.end_date_time) && (moment(aux_time).isAfter(appointment.end_date_time)))
                     || (moment(start_time).isSame(appointment.start_date_time))
-                    || ((moment(aux_time).isSame(appointment.end_date_time)))
-                    || (moment(start_time).isBefore(Date.now()))) {
+                    || (moment(aux_time).isSame(appointment.end_date_time))) {
                     isValid = false;
                   }
                 })
                 if (isValid) {
+                  if(moment(start_time).isSameOrAfter(Date.now()))
                   availabilities.push({ start: start_time, end: aux_time });
                 }
                 start_time = aux_time;
