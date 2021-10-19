@@ -82,47 +82,44 @@ exports.availableSlots = function (req, res) {
       if (!user)
         return res.status(404).json({ message: 'Freelance record not found.' });
       else {
-        if(user.business.schedule.length > 0)
-        {let duration = req.params.duration,
-          date = new Date(req.params.year, req.params.month-1, req.params.day),
+        if (user.business.schedule.length > 0) {
+          let duration = req.params.duration,
+          date = new Date(req.params.year, req.params.month - 1, req.params.day),
           day = date.getDay(),
           schedule_day = user.business.schedule[day],
           isWorkDay = schedule_day.work,
           slots = schedule_day.slot,
           availabilities = [];
           appointments = user.business.appointments;
-        if (isWorkDay) {
-          slots.forEach((slot) => {
-
-            let start_time_hour = slot.start_time.split(":")[0],
-              start_time_minute = slot.start_time.split(":")[1],
-              start_time = new Date(req.params.year, req.params.month-1, req.params.day, start_time_hour, start_time_minute, 0, 0),
-              end_time_hour = slot.end_time.split(":")[0],
-              end_time_minute = slot.end_time.split(":")[1],
-              end_time = new Date(req.params.year, req.params.month-1, req.params.day, end_time_hour, end_time_minute, 0, 0),
-              aux_time = moment(start_time).add(duration, 'minutes').toDate(),
-              isValid = true;
-
-            while (moment(aux_time).isBefore(end_time)) {
-              isValid = true;
-              appointments.forEach((appointment) => {
-                if ((moment(aux_time).isAfter(appointment.start_date_time) && moment(start_time).isBefore(appointment.start_date_time))
-                  || (moment(start_time).isBefore(appointment.end_date_time) && (moment(aux_time).isAfter(appointment.end_date_time)))
-                  || (moment(start_time).isSame(appointment.start_date_time))
-                  || ((moment(aux_time).isSame(appointment.end_date_time)))) {
-                  isValid = false;
+          if (isWorkDay) {
+            slots.forEach((slot) => {
+              let start_time_hour = slot.start_time.split(":")[0],
+                start_time_minute = slot.start_time.split(":")[1],
+                start_time = new Date(req.params.year, req.params.month - 1, req.params.day, start_time_hour, start_time_minute, 0, 0),
+                end_time_hour = slot.end_time.split(":")[0],
+                end_time_minute = slot.end_time.split(":")[1],
+                end_time = new Date(req.params.year, req.params.month - 1, req.params.day, end_time_hour, end_time_minute, 0, 0),
+                aux_time = moment(start_time).add(duration, 'minutes').toDate(),
+                isValid = true;
+              while (moment(aux_time).isSameOrBefore(end_time)) {
+                isValid = true;
+                appointments.forEach((appointment) => {
+                  if ((moment(aux_time).isAfter(appointment.start_date_time) && moment(start_time).isBefore(appointment.start_date_time))
+                    || (moment(start_time).isBefore(appointment.end_date_time) && (moment(aux_time).isAfter(appointment.end_date_time)))
+                    || (moment(start_time).isSame(appointment.start_date_time))
+                    || ((moment(aux_time).isSame(appointment.end_date_time)))
+                    || (moment(start_time).isBefore(moment()))) {
+                    isValid = false;
+                  }
+                })
+                if (isValid) {
+                  availabilities.push({ start: start_time, end: aux_time });
                 }
-              })
-              if (isValid) {
-                availabilities.push({ start: start_time, end: aux_time });
+                start_time = aux_time;
+                aux_time = moment(start_time).add(duration, 'minutes').toDate();
               }
-              start_time = aux_time;
-              aux_time = moment(start_time).add(duration, 'minutes').toDate();
-
-            }
-
-          })
-        }
+            })
+          }
           res.send(availabilities);
         }
         else {
