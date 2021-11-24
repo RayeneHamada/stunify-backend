@@ -21,6 +21,12 @@ var appointmentSchema = new mongoose.Schema({
         prestation : {
             type:String
         },
+        price : {
+            type:Number
+        },
+        duration : {
+            type:Number
+        },
         payment_status : {
             type:String
         },

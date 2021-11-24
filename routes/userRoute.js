@@ -20,6 +20,7 @@ router.post('/updateAddressReverse', main_controller.updateAddressReverse);
 router.post('/addPrestation', jwtHelper.verifyBusinessJwtToken, main_controller.addPrestation);
 router.post('/updateDescription', jwtHelper.verifyBusinessJwtToken, main_controller.updateDescription);
 router.post('/updateSchedule', jwtHelper.verifyBusinessJwtToken, main_controller.updateSchedule);
+router.post('/search', main_controller.search);
 
 router.get('/search/:search', main_controller.search);
 router.get('/salloon/:id', main_controller.getSalloon);

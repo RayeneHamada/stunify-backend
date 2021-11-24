@@ -10,7 +10,7 @@ Notification = mongoose.model('Notifications');
 exports.fetchAll = function(req,res)
 {
 
-    Subscription.find({ receiver: req._id }).
+    Notification.find({ receiver: req._id }).
     populate({ path: 'sender', select: 'firstName' }).
     populate({path: 'sender', select:'lastName'}).
     populate({path: 'sender', select:'profile_image'}).
@@ -26,3 +26,22 @@ exports.fetchAll = function(req,res)
   });
   
 }
+
+exports.fetchAll = function(req,res)
+{
+
+    Notification.find({ receiver: req._id }, '_id created_at sender type content created_at').
+    populate({ path: 'sender', select:'firstName lastName profile_image' }).
+        exec((err, doc) => {
+    
+    if (err) {
+
+      return res.status(500).json(err);
+    }
+    else{
+        return res.status(200).send(doc);
+    }
+  });
+  
+}
+

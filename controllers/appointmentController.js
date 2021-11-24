@@ -160,10 +160,11 @@ exports.dashboard = function (req, res) {
             todo.push(appointment);
           }
           if (moment(new Date(appointment.start_date_time)).week() == moment().week()) {
-            weekDuration += appointment.duration;
+            weekDuration += Number(appointment.duration);
           }
-          if (moment(new Date(appointment.start_date_time)).isSame(new Date())) {
-            dayDuration += appointment.duration;
+          if (moment(new Date(appointment.start_date_time)).isBefore(new Date())) {
+            console.log(appointment.duration);
+            dayDuration += Number(appointment.duration);
           }
         })
         return res.status(200).json({ "todo": todo, "doing": doing, "done": done, "today": dayDuration, "week": weekDuration });

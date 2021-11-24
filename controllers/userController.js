@@ -23,6 +23,8 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://stunify-c28a5-default-rtdb.europe-west1.firebasedatabase.app"
 });
+
+var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 exports.sendCode = function (req, res) {
   client.verify.services(serviceSid)
     .verifications
@@ -79,8 +81,6 @@ exports.sendCodeTest = function (req, res) {
         });
       }
       else {
-        console.log('ahla');
-
         if (user.profile_image)
           res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
         else
@@ -635,24 +635,87 @@ exports.home = (req, res) => {
 }
 
 exports.search = (req, res) => {
-  User.find({
-    'role': 'business', $or: [
-      { 'saloonName': { '$regex': new RegExp(req.params.search, "i") } },
-      { 'firstName': { '$regex': new RegExp(req.params.search, "i") } },
-      { 'lastName': { '$regex': new RegExp(req.params.search, "i") } },
-      { 'business.prestations.name': { '$regex': new RegExp(req.params.search, "i") } }
-    ]
-  },
-    (err, results) => {
-      console.log(results);
+  let query = { $and: [] };
+  let main = {$or:[
+    { 'business.businessName': { '$regex': new RegExp(req.body.search, "i") } },
+    { 'firstName': { '$regex': new RegExp(req.body.search, "i") } },
+    { 'lastName': { '$regex': new RegExp(req.body.search, "i") } },
+    { 'business.prestations.name': { '$regex': new RegExp(req.body.search, "i") } }
+  ]};
+  query.$and.push(main);
+  if (req.body.categories || req.body.categories.length) {
+    let categories = { "business.catrgories": { $in: req.body.categories } };
+    query.$and.push(categories);
+
+  }
+  if (req.body.price) {
+    let price = { "business.prestations.price": { $gt: req.body.price[0], $lte: req.body.price[1] } };
+    query.$and.push(price);
+
+  }
+
+  if (req.body.date) {
+    let d = new Date(req.body.date);
+    day = d.getDay();
+    day = week[day];
+    let date = { $and: [{ "business.schedule.day": day },{"business.schedule.work": true }] };
+    query.$and.push(date);
+
+  }
+  User.find(query, (err, docs) => {
+    if (!err) {
+      res.send({"resultat":docs,"query":query});
     }
-  ).catch(
-    (error) => {
-      res.status(400).json({
-        error: error
-      });
+  })
+/*
+  User.aggregate(
+    [
+      {
+        "$geoNear": {
+          "near": {
+            "type": "Point",
+            "coordinates": [req.body.lng, req.body.lat]
+          },
+          "distanceField": "distance",
+          "spherical": true,
+          "maxDistance": 1000000000,
+          "query": { "role": "business", "business.role": "salloon" },
+        }
+      },
+      {
+        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+      }
+    ],
+    function (err, results) {
+      var saloons = results;
+      User.aggregate(
+        [
+          {
+            "$geoNear": {
+              "near": {
+                "type": "Point",
+                "coordinates": [req.body.location.lng, req.body.location.lat]
+              },
+              "distanceField": "distance",
+              "spherical": true,
+              "maxDistance": req.body.distance[1],
+              "maxDistance": req.body.distance[0],
+              "query": { "role": "business", "business.role": "freelance" },
+            }
+          },
+          {
+            "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+          }
+        ],
+        function (err, results) {
+          var freelancers = results;
+
+          res.status(201).send({ "saloons": saloons, "freelancers": freelancers });
+        }
+      )
     }
-  );
+  )*/
+
 }
 
 exports.myBusinessProfile = function (req, res) {
