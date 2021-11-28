@@ -18,6 +18,9 @@ var appointmentSchema = new mongoose.Schema({
         end_date_time: {
             type: Date,
         },
+        duration: {
+            type: Number,
+        },
         prestation : {
             type:String
         },

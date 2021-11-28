@@ -16,6 +16,7 @@ exports.book = function (req, res, next) {
   appointment.end_date_time = req.body.end_date_time;
   appointment.prestation = req.body.prestation;
   appointment.payment_method = req.body.payment_method;
+  appointment.duration = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time)).asMinutes();
   appointment.save((err, doc) => {
     if (err) {
 
@@ -150,21 +151,23 @@ exports.dashboard = function (req, res) {
         let dayDuration = 0;
         let weekDuration = 0;
         appointments.forEach((appointment) => {
+          let d = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time));
+          let durationHours = d.asHours();
+          let durationMinutes = d.asMinutes;
           if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
             done.push(appointment);
           }
-          if (moment(new Date(appointment.end_date_time)).isAfter(new Date()) && moment(new Date(appointment.start_date_time)).isBefore(new Date())) {
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
             doing.push(appointment);
           }
           if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
             todo.push(appointment);
           }
           if (moment(new Date(appointment.start_date_time)).week() == moment().week()) {
-            weekDuration += Number(appointment.duration);
+            weekDuration += Number(durationHours);
           }
-          if (moment(new Date(appointment.start_date_time)).isBefore(new Date())) {
-            console.log(appointment.duration);
-            dayDuration += Number(appointment.duration);
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day')) {
+            dayDuration += Number(durationHours);
           }
         })
         return res.status(200).json({ "todo": todo, "doing": doing, "done": done, "today": dayDuration, "week": weekDuration });
