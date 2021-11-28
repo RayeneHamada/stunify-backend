@@ -827,6 +827,21 @@ exports.myPrestations = function (req, res) {
 
 }
 
+exports.mySchedule = function (req, res) {
+
+
+  User.findOne({ _id: req._id }).
+    populate({ path: 'business.schedule'}).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ status: false, message: 'Business record not found.' });
+      else {
+        res.status(200).send(sortPrestations(user.business.prestations));
+      }
+    });
+
+}
+
 exports.addFeedBack = function (req, res) {
   User.findOne({ _id: req.body.businessId },
     (err, business) => {
