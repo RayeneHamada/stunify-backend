@@ -312,21 +312,30 @@ exports.completeBusinessSignup = async function (req, res) {
 }
 
 
-exports.updateUserProfile = (req, res) => {
+exports.updateProfile = (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
-        user.firsName = req.body.firsName;
+        user.firstName = req.body.firstName;
         user.lastName = req.body.lastName;
         user.email = req.body.email;
         user.phoneNumber = req.body.phoneNumber;
-        user.business.about = req.body.about;
+        const loc = await geocoder.geocode({
+          address: req.body.street,
+          country: req.body.country,
+          zipcode: req.body.zip
+        });
+        var address = { "street": req.body.street, "zip": req.body.zip, "city": req.body.city, "country": req.body.country };
+        address.geolocation = {
+          coordinates: [loc[0].latitude, loc[0].longitude],
+        };
+        user.address = address;
         User.updateOne({ _id: user._id }, user).then(
           () => {
             res.status(201).json({
-              message: 'User updated successfully!'
+              message: 'Profile updated successfully!'
             });
           }
         ).catch(
@@ -742,6 +751,18 @@ exports.myProfile = function (req, res) {
 
 }
 
+exports.myDescription = function (req, res) {
+
+  User.findOne({ _id: req._id }, 'business.prestation_description business.about', (err, user) => {
+    if (!user)
+      return res.status(404).json({ message: 'Profile record not found.' });
+    else {
+      res.status(200).json(user);
+    }
+  });
+
+}
+
 exports.getSalloon = function (req, res) {
 
   User.findOne({ _id: req.params.id }).
@@ -780,6 +801,21 @@ exports.getPrestations = function (req, res) {
 
 
   User.findOne({ _id: req.params.id }).
+    populate({ path: 'business.prestations.category', select: 'name' }).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ status: false, message: 'Business record not found.' });
+      else {
+        res.status(200).send(sortPrestations(user.business.prestations));
+      }
+    });
+
+}
+
+exports.myPrestations = function (req, res) {
+
+
+  User.findOne({ _id: req._id }).
     populate({ path: 'business.prestations.category', select: 'name' }).
     exec((err, user) => {
       if (!user)

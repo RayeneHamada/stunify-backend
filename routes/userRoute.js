@@ -11,7 +11,7 @@ router.post('/verif', main_controller.verifCode);
 router.post('/completeSub', jwtHelper.verifyJwtToken, main_controller.completeSubscription);
 router.post('/completeBusinessSub', jwtHelper.verifyBusinessJwtToken, main_controller.completeBusinessSignup);
 
-
+router.post('/updateProfile', jwtHelper.verifyJwtToken, main_controller.updateProfile);
 router.post('/updateProfileImage',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateProfileImage);
 router.post('/updateLogo',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateLogo);
 router.post('/updateOwnerPicture',[imageUpload.single('image'),jwtHelper.verifyJwtToken], main_controller.updateOwnerPicture);
@@ -26,8 +26,10 @@ router.get('/search/:search', main_controller.search);
 router.get('/salloon/:id', main_controller.getSalloon);
 router.get('/freelance/:id', main_controller.getFreelance);
 router.get('/prestations/:id', main_controller.getPrestations);
+router.get('/myPrestations',jwtHelper.verifyBusinessJwtToken, main_controller.myPrestations);
 router.get('/test', main_controller.testNotif);
 router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
+router.get('/myDescription',jwtHelper.verifyBusinessJwtToken, main_controller.myDescription);
 router.get('/myProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 
