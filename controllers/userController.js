@@ -314,7 +314,7 @@ exports.completeBusinessSignup = async function (req, res) {
 
 exports.updateProfile = async (req, res) => {
   User.findOne({ _id: req._id },
-    (err, user) => {
+    async (err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
