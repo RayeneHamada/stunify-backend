@@ -312,7 +312,7 @@ exports.completeBusinessSignup = async function (req, res) {
 }
 
 
-exports.updateProfile = (req, res) => {
+exports.updateProfile = async (req, res) => {
   User.findOne({ _id: req._id },
     (err, user) => {
       if (!user)
