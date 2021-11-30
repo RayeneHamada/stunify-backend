@@ -741,7 +741,7 @@ exports.myBusinessProfile = function (req, res) {
 
 exports.myProfile = function (req, res) {
 
-  User.findOne({ _id: req._id }, 'phoneNumber email firstName lastName profile_image business.kbis', (err, user) => {
+  User.findOne({ _id: req._id }, 'phoneNumber email firstName lastName profile_image business.kbis address', (err, user) => {
     if (!user)
       return res.status(404).json({ message: 'Profile record not found.' });
     else {
