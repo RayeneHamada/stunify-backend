@@ -323,11 +323,11 @@ exports.updateProfile = async (req, res) => {
         user.email = req.body.email;
         user.phoneNumber = req.body.phoneNumber;
         const loc = await geocoder.geocode({
-          address: req.body.street,
-          country: req.body.country,
-          zipcode: req.body.zip
+          address: req.body.address.street,
+          country: req.body.address.country,
+          zipcode: req.body.address.zip
         });
-        var address = { "street": req.body.street, "zip": req.body.zip, "city": req.body.city, "country": req.body.country };
+        var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city, "country": req.body.address.country };
         address.geolocation = {
           coordinates: [loc[0].latitude, loc[0].longitude],
         };
@@ -836,7 +836,7 @@ exports.mySchedule = function (req, res) {
       if (!user)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
       else {
-        res.status(200).send(sortPrestations(user.business.prestations));
+        res.status(200).send(user.business.schedule);
       }
     });
 
