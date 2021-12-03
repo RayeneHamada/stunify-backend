@@ -23,7 +23,7 @@ router.post('/updateSchedule', jwtHelper.verifyBusinessJwtToken, main_controller
 router.post('/search', main_controller.search);
 
 router.get('/search/:search', main_controller.search);
-router.get('/salloon/:id', main_controller.getSalloon);
+router.get('/saloon/:id', main_controller.getSaloon);
 router.get('/freelance/:id', main_controller.getFreelance);
 router.get('/prestations/:id', main_controller.getPrestations);
 router.get('/myPrestations',jwtHelper.verifyBusinessJwtToken, main_controller.myPrestations);

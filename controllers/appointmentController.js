@@ -41,8 +41,20 @@ exports.book = function (req, res, next) {
                           notification.content = 'a réservé un rendez-vous';
                           notification.save((err, doc) => {
                             if (!err) {
-                              return res.status(201).json({
-                                message: 'Appointment added successfully!'
+                              notification = new Notification();
+                              notification.sender = req.body.business;
+                              notification.receiver = req._id;
+                              notification.type = 'appointment';
+                              notification.content = 'a reçu votre demande de rendez-vous';
+                              notification.save((err, doc) => {
+                                if (!err) {
+                                  return res.status(201).json({
+                                    message: 'Appointment added successfully!'
+                                  });
+                                }
+                                else {
+                                  return res.json({ 'error': err });
+                                }
                               });
                             }
                             else {
@@ -205,5 +217,37 @@ exports.appointmentPerDay = function (req, res) {
 }
 
 exports.myAppointments = function (req, res) {
+  User.findOne({ _id: req._id }, 'personal.appointments').
+  populate({
+    path: 'personal.appointments',
+    populate: 
+      [{ path: 'business' , select: 'firstName lastName profile_image'}
+      ]
+   }).
+    exec((err, results) => {
+      if (!results)
+        return res.status(404).json({ message: 'User record not found.' });
+        else {
+          var appointments = results.personal.appointments;
+          let done = [];
+          let todo = [];
+          let doing = [];
+          appointments.forEach((appointment) => {
+            let d = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time));
+            let durationHours = d.asHours();
+            let durationMinutes = d.asMinutes;
+            if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
+              done.push(appointment);
+            }
+            if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
+              doing.push(appointment);
+            }
+            if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
+              todo.push(appointment);
+            }
+          })
+          return res.status(200).json({ "todo": todo, "doing": doing, "done": done });
   
+        }
+    });
 }

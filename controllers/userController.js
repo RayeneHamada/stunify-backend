@@ -603,8 +603,10 @@ exports.home = (req, res) => {
             "coordinates": [req.body.lat, req.body.lng]
           },
           "distanceField": "distance",
+          "maxDistance": 10000000, //10km
+          "distanceMultiplier": 1/1000,
           "spherical": true,
-          "query": { "role": "business", "business.role": "salloon" },
+          "query": { "role": "business", "business.role": "saloon" },
         }
       },
       {
@@ -622,8 +624,11 @@ exports.home = (req, res) => {
                 "coordinates": [req.body.lat, req.body.lng]
               },
               "distanceField": "distance",
+              "maxDistance": 10000000, //10km
+              "distanceMultiplier": 1/1000,
+
               "spherical": true,
-              "query": { "role": "business", "business.role": "freelance" },
+              "query": { "role": "business", "business.role": "freelancer" },
             }
           },
           {
@@ -642,12 +647,14 @@ exports.home = (req, res) => {
 
 exports.search = (req, res) => {
   let query = { $and: [] };
-  let main = {$or:[
-    { 'business.businessName': { '$regex': new RegExp(req.body.search, "i") } },
-    { 'firstName': { '$regex': new RegExp(req.body.search, "i") } },
-    { 'lastName': { '$regex': new RegExp(req.body.search, "i") } },
-    { 'business.prestations.name': { '$regex': new RegExp(req.body.search, "i") } }
-  ]};
+  let main = {
+    $or: [
+      { 'business.businessName': { '$regex': new RegExp(req.body.search, "i") } },
+      { 'firstName': { '$regex': new RegExp(req.body.search, "i") } },
+      { 'lastName': { '$regex': new RegExp(req.body.search, "i") } },
+      { 'business.prestations.name': { '$regex': new RegExp(req.body.search, "i") } }
+    ]
+  };
   query.$and.push(main);
   if (req.body.categories || req.body.categories.length) {
     let categories = { "business.catrgories": { $in: req.body.categories } };
@@ -664,63 +671,63 @@ exports.search = (req, res) => {
     let d = new Date(req.body.date);
     day = d.getDay();
     day = week[day];
-    let date = { $and: [{ "business.schedule.day": day },{"business.schedule.work": true }] };
+    let date = { $and: [{ "business.schedule.day": day }, { "business.schedule.work": true }] };
     query.$and.push(date);
 
   }
   User.find(query, (err, docs) => {
     if (!err) {
-      res.send({"resultat":docs,"query":query});
+      res.send({ "resultat": docs, "query": query });
     }
   })
-/*
-  User.aggregate(
-    [
-      {
-        "$geoNear": {
-          "near": {
-            "type": "Point",
-            "coordinates": [req.body.lng, req.body.lat]
-          },
-          "distanceField": "distance",
-          "spherical": true,
-          "maxDistance": 1000000000,
-          "query": { "role": "business", "business.role": "salloon" },
-        }
-      },
-      {
-        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
-      }
-    ],
-    function (err, results) {
-      var saloons = results;
-      User.aggregate(
-        [
-          {
-            "$geoNear": {
-              "near": {
-                "type": "Point",
-                "coordinates": [req.body.location.lng, req.body.location.lat]
-              },
-              "distanceField": "distance",
-              "spherical": true,
-              "maxDistance": req.body.distance[1],
-              "maxDistance": req.body.distance[0],
-              "query": { "role": "business", "business.role": "freelance" },
-            }
-          },
-          {
-            "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+  /*
+    User.aggregate(
+      [
+        {
+          "$geoNear": {
+            "near": {
+              "type": "Point",
+              "coordinates": [req.body.lng, req.body.lat]
+            },
+            "distanceField": "distance",
+            "spherical": true,
+            "maxDistance": 1000000000,
+            "query": { "role": "business", "business.role": "saloon" },
           }
-        ],
-        function (err, results) {
-          var freelancers = results;
-
-          res.status(201).send({ "saloons": saloons, "freelancers": freelancers });
+        },
+        {
+          "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
         }
-      )
-    }
-  )*/
+      ],
+      function (err, results) {
+        var saloons = results;
+        User.aggregate(
+          [
+            {
+              "$geoNear": {
+                "near": {
+                  "type": "Point",
+                  "coordinates": [req.body.location.lng, req.body.location.lat]
+                },
+                "distanceField": "distance",
+                "spherical": true,
+                "maxDistance": req.body.distance[1],
+                "maxDistance": req.body.distance[0],
+                "query": { "role": "business", "business.role": "freelance" },
+              }
+            },
+            {
+              "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+            }
+          ],
+          function (err, results) {
+            var freelancers = results;
+  
+            res.status(201).send({ "saloons": saloons, "freelancers": freelancers });
+          }
+        )
+      }
+    )*/
 
 }
 
@@ -760,7 +767,7 @@ exports.myDescription = function (req, res) {
 
 }
 
-exports.getSalloon = function (req, res) {
+exports.getSaloon = function (req, res) {
 
   User.findOne({ _id: req.params.id }).
     populate({ path: 'feedbacks.owner', select: 'firstName' }).
@@ -768,7 +775,7 @@ exports.getSalloon = function (req, res) {
     populate({ path: 'feedbacks.owner', select: 'profile_image' }).
     exec((err, user) => {
       if (!user)
-        return res.status(404).json({ message: 'Salloon record not found.' });
+        return res.status(404).json({ message: 'saloon record not found.' });
       else {
         return res.status(200).json(user);
 
@@ -828,7 +835,7 @@ exports.mySchedule = function (req, res) {
 
 
   User.findOne({ _id: req._id }).
-    populate({ path: 'business.schedule'}).
+    populate({ path: 'business.schedule' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
