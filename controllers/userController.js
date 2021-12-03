@@ -311,7 +311,6 @@ exports.completeBusinessSignup = async function (req, res) {
     });
 }
 
-
 exports.updateProfile = async (req, res) => {
   User.findOne({ _id: req._id },
     async (err, user) => {
@@ -601,11 +600,10 @@ exports.home = (req, res) => {
         "$geoNear": {
           "near": {
             "type": "Point",
-            "coordinates": [req.body.lng, req.body.lat]
+            "coordinates": [req.body.lat, req.body.lng]
           },
           "distanceField": "distance",
           "spherical": true,
-          "maxDistance": 1000000000,
           "query": { "role": "business", "business.role": "salloon" },
         }
       },
@@ -621,11 +619,10 @@ exports.home = (req, res) => {
             "$geoNear": {
               "near": {
                 "type": "Point",
-                "coordinates": [req.body.lng, req.body.lat]
+                "coordinates": [req.body.lat, req.body.lng]
               },
               "distanceField": "distance",
               "spherical": true,
-              "maxDistance": 1000000000,
               "query": { "role": "business", "business.role": "freelance" },
             }
           },

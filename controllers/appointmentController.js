@@ -203,3 +203,7 @@ exports.appointmentPerDay = function (req, res) {
     });
 
 }
+
+exports.myAppointments = function (req, res) {
+  
+}

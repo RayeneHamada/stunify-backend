@@ -31,7 +31,7 @@ router.get('/mySchedule',jwtHelper.verifyBusinessJwtToken, main_controller.mySch
 router.get('/test', main_controller.testNotif);
 router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
 router.get('/myDescription',jwtHelper.verifyBusinessJwtToken, main_controller.myDescription);
-router.get('/myProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myProfile);
+router.get('/myProfile',jwtHelper.verifyJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 
 router.post('/addFeedBack', main_controller.addFeedBack);
