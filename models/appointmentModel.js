@@ -22,13 +22,8 @@ var appointmentSchema = new mongoose.Schema({
             type: Number,
         },
         prestation : {
-            type:String
-        },
-        price : {
-            type:Number
-        },
-        duration : {
-            type:Number
+            type: mongoose.Schema.Types.ObjectId,
+        ref: "Prestations"
         },
         payment_status : {
             type:String

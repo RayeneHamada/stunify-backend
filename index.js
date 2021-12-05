@@ -1,6 +1,7 @@
 require('dotenv').config();
 // require models
 require('./models/userModel');
+require('./models/prestationModel');
 require('./models/categoryModel');
 require('./models/appointmentModel');
 require('./models/notificationModel');

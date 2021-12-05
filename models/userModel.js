@@ -111,22 +111,9 @@ var userSchema = new mongoose.Schema({
     },
 
     prestations: [{
-      name: {
-        type: String
-      },
-      description: {
-        type: String
-      },
-      duration: {
-        type: String,
-      },
-      price: {
-        type: String
-      },
-      category: {
+
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Categories"
-      }
+        ref: "Prestations"
     }],
     schedule: [{
       day: {

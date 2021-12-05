@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose'),
   User = mongoose.model('Users');
+Prestation = mongoose.model('Prestations');
 Notification = mongoose.model('Notifications');
 const path = require('path');
 const passport = require('passport');
@@ -569,27 +570,42 @@ exports.updateAddressReverse = async (req, res) => {
 }
 
 exports.addPrestation = (req, res) => {
-  User.findOne({ _id: req._id },
-    (err, user) => {
-      if (!user)
-        return res.status(404).json({ status: false, message: 'User record not found.' });
-      else {
-        prestation = { "name": req.body.name, "description": req.body.description, "duration": req.body.duration, "price": req.body.price, "category": req.body.category };
-        User.updateOne({ _id: user._id }, { $push: { "business.prestations": prestation } }).then(
-          () => {
-            res.status(201).json({
-              message: 'Prestation added successfully!'
-            });
+
+  p = new Prestation();
+  p.name = req.body.name;
+  p.description = req.body.description;
+  p.duration = req.body.duration;
+  p.price = req.body.price;
+  p.category = req.body.category;
+  p.save((err, doc) => {
+    if (!err) {
+      User.findOne({ _id: req._id },
+        (err, user) => {
+          if (!user)
+            return res.status(404).json({ status: false, message: 'User record not found.' });
+          else {
+            User.updateOne({ _id: user._id }, { $push: { "business.prestations": doc._id } }).then(
+              () => {
+                res.status(201).json({
+                  message: 'Prestation added successfully!'
+                });
+              }
+            ).catch(
+              (error) => {
+                res.status(400).json({
+                  error: error
+                });
+              }
+            );
           }
-        ).catch(
-          (error) => {
-            res.status(400).json({
-              error: error
-            });
-          }
-        );
-      }
-    });
+        });
+    }
+    else {
+      return res.json({ 'error': err });
+    }
+  });
+
+
 }
 
 exports.home = (req, res) => {
@@ -604,7 +620,7 @@ exports.home = (req, res) => {
           },
           "distanceField": "distance",
           "maxDistance": 10000000, //10km
-          "distanceMultiplier": 1/1000,
+          "distanceMultiplier": 1 / 1000,
           "spherical": true,
           "query": { "role": "business", "business.role": "saloon" },
         }
@@ -625,7 +641,7 @@ exports.home = (req, res) => {
               },
               "distanceField": "distance",
               "maxDistance": 10000000, //10km
-              "distanceMultiplier": 1/1000,
+              "distanceMultiplier": 1 / 1000,
 
               "spherical": true,
               "query": { "role": "business", "business.role": "freelancer" },
@@ -733,13 +749,18 @@ exports.search = (req, res) => {
 
 exports.myBusinessProfile = function (req, res) {
 
-  User.findOne({ _id: req._id }, 'business.prestation_description business.about business.mobility business.prestations business.schedule business.businessName ', (err, user) => {
-    if (!user)
-      return res.status(404).json({ message: 'Profile record not found.' });
-    else {
-      res.status(200).json(user);
-    }
-  });
+  User.findOne({ _id: req._id }, 'business.prestation_description business.about business.mobility business.prestations business.schedule business.businessName ').
+    populate({ path: 'business.prestations', select: 'name' }).
+    populate({ path: 'business.prestations', select: 'description' }).
+    populate({ path: 'business.prestations', select: 'duration' }).
+    populate({ path: 'business.prestations', select: 'price' }).
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'Profile record not found.' });
+      else {
+        res.status(200).json(user);
+      }
+    });
 
 }
 
@@ -805,6 +826,9 @@ exports.getPrestations = function (req, res) {
 
 
   User.findOne({ _id: req.params.id }).
+    populate({ path: 'business.prestations', select: 'description' }).
+    populate({ path: 'business.prestations', select: 'duration' }).
+    populate({ path: 'business.prestations', select: 'price' }).
     populate({ path: 'business.prestations.category', select: 'name' }).
     exec((err, user) => {
       if (!user)
@@ -820,7 +844,10 @@ exports.myPrestations = function (req, res) {
 
 
   User.findOne({ _id: req._id }).
-    populate({ path: 'business.prestations.category', select: 'name' }).
+  populate({ path: 'business.prestations', select: 'description' }).
+  populate({ path: 'business.prestations', select: 'duration' }).
+  populate({ path: 'business.prestations', select: 'price' }).
+  populate({ path: 'business.prestations.category', select: 'name' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
