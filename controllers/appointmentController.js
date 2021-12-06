@@ -1,6 +1,6 @@
 
 const mongoose = require('mongoose'),
-  Appointment = mongoose.model('Appointments');
+Appointment = mongoose.model('Appointments');
 User = mongoose.model('Users');
 Notification = mongoose.model('Notifications');
 var moment = require('moment');
@@ -18,22 +18,29 @@ exports.book = function (req, res, next) {
   appointment.payment_method = req.body.payment_method;
   appointment.duration = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time)).asMinutes();
   appointment.save((err, doc) => {
-    if (err) {
 
+    if (err) {
       if (err.code === 11000)
         return res.status(500).json({ message: "Appointment already exits" });
     }
     else {
+
       User.findOne({ _id: req.body.business },
         (err, business) => {
           if (business) {
+
             User.updateOne({ _id: req.body.business }, { $push: { "business.appointments": new mongoose.mongo.ObjectId(doc._id) } }).then(
               (result, error1) => {
+
                 User.findOne({ _id: req._id },
                   (err, personal) => {
+                    console.log(req._id);
                     if (personal) {
+                      console.log('hola');
+
                       User.updateOne({ _id: req._id }, { $push: { "personal.appointments": new mongoose.mongo.ObjectId(doc._id) } }).then(
                         (result, error1) => {
+
                           notification = new Notification();
                           notification.sender = req._id;
                           notification.receiver = req.body.business;
@@ -70,7 +77,6 @@ exports.book = function (req, res, next) {
                         }
                       );
                     }
-
                   });
               }
             ).catch(
@@ -80,9 +86,7 @@ exports.book = function (req, res, next) {
                 });
               }
             );
-
           }
-
         });
     }
   })
@@ -97,12 +101,12 @@ exports.availableSlots = function (req, res) {
       else {
         if (user.business.schedule.length > 0) {
           let duration = req.params.duration,
-          date = new Date(req.params.year, req.params.month - 1, req.params.day),
-          day = date.getDay(),
-          schedule_day = user.business.schedule[day],
-          isWorkDay = schedule_day.work,
-          slots = schedule_day.slot,
-          availabilities = [];
+            date = new Date(req.params.year, req.params.month - 1, req.params.day),
+            day = date.getDay(),
+            schedule_day = user.business.schedule[day],
+            isWorkDay = schedule_day.work,
+            slots = schedule_day.slot,
+            availabilities = [];
           appointments = user.business.appointments;
           if (isWorkDay) {
             slots.forEach((slot) => {
@@ -125,8 +129,8 @@ exports.availableSlots = function (req, res) {
                   }
                 })
                 if (isValid) {
-                  if(moment(start_time).isSameOrAfter(Date.now()))
-                  availabilities.push({ start: start_time, end: aux_time });
+                  if (moment(start_time).isSameOrAfter(Date.now()))
+                    availabilities.push({ start: start_time, end: aux_time });
                 }
                 start_time = aux_time;
                 aux_time = moment(start_time).add(duration, 'minutes').toDate();
@@ -148,10 +152,11 @@ exports.dashboard = function (req, res) {
   User.findOne({ _id: req._id }, 'business.appointments').
     populate({
       path: 'business.appointments',
-      populate: 
-        [{ path: 'personal' , select: 'firstName lastName profile_image'}
+      populate:
+        [{ path: 'personal', select: 'firstName lastName profile_image' },
+        { path: 'prestation', select: 'name price duration' }
         ]
-     }).
+    }).
     exec((err, result) => {
       if (!result)
         return res.status(404).json({ message: 'Salloon record not found.' });
@@ -169,7 +174,7 @@ exports.dashboard = function (req, res) {
           if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
             done.push(appointment);
           }
-          if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date(), 'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
             doing.push(appointment);
           }
           if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
@@ -178,7 +183,7 @@ exports.dashboard = function (req, res) {
           if (moment(new Date(appointment.start_date_time)).week() == moment().week()) {
             weekDuration += Number(durationHours);
           }
-          if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day')) {
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date(), 'day')) {
             dayDuration += Number(durationHours);
           }
         })
@@ -192,12 +197,13 @@ exports.dashboard = function (req, res) {
 exports.appointmentPerDay = function (req, res) {
 
   User.findOne({ _id: req._id }, 'business.appointments').
-  populate({
-    path: 'business.appointments',
-    populate: 
-      [{ path: 'personal' , select: 'firstName lastName profile_image'}
-      ]
-   }).
+    populate({
+      path: 'business.appointments',
+      populate:
+        [{ path: 'personal', select: 'firstName lastName profile_image' },
+        { path: 'prestation', select: 'name price duration' }
+        ]
+    }).
     exec((err, results) => {
       if (!results)
         return res.status(404).json({ message: 'Salloon record not found.' });
@@ -218,36 +224,37 @@ exports.appointmentPerDay = function (req, res) {
 
 exports.myAppointments = function (req, res) {
   User.findOne({ _id: req._id }, 'personal.appointments').
-  populate({
-    path: 'personal.appointments',
-    populate: 
-      [{ path: 'business' , select: 'firstName lastName profile_image'}
-      ]
-   }).
+    populate({
+      path: 'personal.appointments',
+      populate:
+        [{ path: 'business', select: 'business.businessName firstName lastName profile_image' },
+        { path: 'prestation', select: 'name price duration' }
+        ]
+    }).
     exec((err, results) => {
       if (!results)
         return res.status(404).json({ message: 'User record not found.' });
-        else {
-          var appointments = results.personal.appointments;
-          let done = [];
-          let todo = [];
-          let doing = [];
-          appointments.forEach((appointment) => {
-            let d = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time));
-            let durationHours = d.asHours();
-            let durationMinutes = d.asMinutes;
-            if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
-              done.push(appointment);
-            }
-            if (moment(new Date(appointment.start_date_time)).isSame(new Date(),'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
-              doing.push(appointment);
-            }
-            if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
-              todo.push(appointment);
-            }
-          })
-          return res.status(200).json({ "todo": todo, "doing": doing, "done": done });
-  
-        }
+      else {
+        var appointments = results.personal.appointments;
+        let done = [];
+        let todo = [];
+        let doing = [];
+        appointments.forEach((appointment) => {
+          let d = moment.duration((moment(appointment.end_date_time)).diff(appointment.start_date_time));
+          let durationHours = d.asHours();
+          let durationMinutes = d.asMinutes;
+          if (moment(new Date(appointment.end_date_time)).isBefore(new Date())) {
+            done.push(appointment);
+          }
+          if (moment(new Date(appointment.start_date_time)).isSame(new Date(), 'day') && moment(new Date(appointment.end_date_time)).isAfter(new Date())) {
+            doing.push(appointment);
+          }
+          if (moment(new Date(appointment.start_date_time)).isAfter(new Date())) {
+            todo.push(appointment);
+          }
+        })
+        return res.status(200).json({ "todo": todo, "doing": doing, "done": done });
+
+      }
     });
 }
