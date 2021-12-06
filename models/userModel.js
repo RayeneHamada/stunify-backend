@@ -180,6 +180,7 @@ var userSchema = new mongoose.Schema({
 
 });
 userSchema.index({ "address.geolocation": "2dsphere" });
+userSchema.index({ "business.businessName": "text" });
 
 // Custom validation for email
 userSchema.path('email').validate((val) => {

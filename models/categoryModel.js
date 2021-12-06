@@ -8,6 +8,10 @@ var categorySchema = new mongoose.Schema({
     type: String,
     unique: true,
     required : true
+  },
+  icon:{
+    type: String,
+    required : true
   }
 
   });

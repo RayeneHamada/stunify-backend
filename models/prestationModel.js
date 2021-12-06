@@ -23,5 +23,5 @@ var prestationSchema = new mongoose.Schema({
 
   });
 
-
+  prestationSchema.index({ "name": "text" });
 mongoose.model('Prestations', prestationSchema);
