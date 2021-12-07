@@ -11,10 +11,10 @@ var prestationSchema = new mongoose.Schema({
     type: String
   },
   duration: {
-    type: String,
+    type: Number,
   },
   price: {
-    type: String
+    type: Number
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,

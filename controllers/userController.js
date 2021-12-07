@@ -662,16 +662,77 @@ exports.home = (req, res) => {
 }
 
 exports.search = (req, res) => {
-  let query = { $and: [] };
-  let main = {
-    $or: [
-      { 'business.businessName': { '$regex': new RegExp(req.body.search, "i") } },
-      { 'firstName': { '$regex': new RegExp(req.body.search, "i") } },
-      { 'lastName': { '$regex': new RegExp(req.body.search, "i") } },
-      { 'business.prestations.name': { '$regex': new RegExp(req.body.search, "i") } }
-    ]
-  };
-  query.$and.push(main);
+
+  let categories = []
+  req.body.categories.forEach(cat => {
+    categories.push(new ObjectId(cat));
+  });
+  let day = new Date(req.body.date).getDay();
+  User.aggregate(
+    [
+
+      {
+        "$geoNear": {
+          "near": {
+            "type": "Point",
+            "coordinates": [req.body.location.lat, req.body.location.lng]
+          },
+          "distanceField": "distance",
+          "spherical": true,
+          "minDistance": req.body.distance[0] * 1000,
+          "maxDistance": req.body.distance[1] * 1000,
+          "distanceMultiplier": 1 / 1000,
+          "query": { "role": "business" },
+        }
+      },
+      
+      {
+        '$lookup':
+        {
+          'from': "prestations",
+          'localField': "business.prestations",
+          'foreignField': "_id",
+          'as': "prestations"
+        }
+      },
+      /*{
+        '$lookup':
+          {
+            'from': "categories",
+            'localField': "prestations.category",
+            'foreignField': "_id",
+            'as': "categories"
+          }
+      },*/
+
+      {
+        '$match':
+
+        {
+          'prestations.price': { '$in': [req.body.price[0], req.body.price[1]] },
+          'prestations.category': { "$in": categories },
+
+
+        }
+      },
+
+
+
+      {
+        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1, "prestations": 1, "address.geolocation": 1 }
+      }
+    ],
+    function (err, results) {
+
+      if (!err) {
+        res.status(200).send(results);
+      }
+      else {
+        res.status(500).send(err);
+      }
+
+    }
+  )
   /*if (req.body.categories && req.body.categories.length) {
     let categories = { "business.catrgories": { $in: req.body.categories } };
     query.$and.push(categories);
@@ -691,11 +752,11 @@ exports.search = (req, res) => {
     query.$and.push(date);
 
   }*/
-  User.find(query, (err, docs) => {
-    if (!err) {
-      res.send({ "resultat": docs, "query": query });
-    }
-  })
+  /* User.find(query, (err, docs) => {
+     if (!err) {
+       res.send({ "resultat": docs, "query": query });
+     }
+   })*/
   /*
     User.aggregate(
       [
@@ -826,9 +887,9 @@ exports.getPrestations = function (req, res) {
     populate({ path: 'business.prestations', select: 'name description duration price' }).
     populate({
       path: 'business.prestations',
-      populate: 
-        [{ path: 'category' , select: 'name'}]
-     }).
+      populate:
+        [{ path: 'category', select: 'name' }]
+    }).
     populate({ path: 'business.prestations.category', select: 'name' }).
     exec((err, user) => {
       if (!user)
@@ -845,13 +906,13 @@ exports.myPrestations = function (req, res) {
 
 
   User.findOne({ _id: req._id }).
-  populate({ path: 'business.prestations', select: 'name description duration price' }).
-  populate({
-    path: 'business.prestations',
-    populate: 
-      [{ path: 'category' , select: 'name'}]
-   }).
-  populate({ path: 'business.prestations.category', select: 'name' }).
+    populate({ path: 'business.prestations', select: 'name description duration price' }).
+    populate({
+      path: 'business.prestations',
+      populate:
+        [{ path: 'category', select: 'name' }]
+    }).
+    populate({ path: 'business.prestations.category', select: 'name' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
