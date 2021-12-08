@@ -668,6 +668,8 @@ exports.search = (req, res) => {
     categories.push(new ObjectId(cat));
   });
   let day = new Date(req.body.date).getDay();
+  let dateQuery = "business.schedule." + day + ".work";
+  const regex = new RegExp(escapeRegex(req.body.search), 'gi');
   User.aggregate(
     [
 
@@ -682,7 +684,11 @@ exports.search = (req, res) => {
           "minDistance": req.body.distance[0] * 1000,
           "maxDistance": req.body.distance[1] * 1000,
           "distanceMultiplier": 1 / 1000,
-          "query": { "role": "business" },
+          "query": {
+            "role": "business",
+            "business.businessName": regex,
+            [dateQuery]:true
+          },
         }
       },
       
@@ -695,29 +701,14 @@ exports.search = (req, res) => {
           'as': "prestations"
         }
       },
-      /*{
-        '$lookup':
-          {
-            'from': "categories",
-            'localField': "prestations.category",
-            'foreignField': "_id",
-            'as': "categories"
-          }
-      },*/
-
       {
         '$match':
 
         {
           'prestations.price': { '$in': [req.body.price[0], req.body.price[1]] },
           'prestations.category': { "$in": categories },
-
-
         }
       },
-
-
-
       {
         "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1, "prestations": 1, "address.geolocation": 1 }
       }
@@ -733,78 +724,6 @@ exports.search = (req, res) => {
 
     }
   )
-  /*if (req.body.categories && req.body.categories.length) {
-    let categories = { "business.catrgories": { $in: req.body.categories } };
-    query.$and.push(categories);
-
-  }
-  if (req.body.price) {
-    let price = { "business.prestations.price": { $gt: req.body.price[0], $lte: req.body.price[1] } };
-    query.$and.push(price);
-
-  }
-
-  if (req.body.date) {
-    let d = new Date(req.body.date);
-    day = d.getDay();
-    day = week[day];
-    let date = { $and: [{ "business.schedule.day": day }, { "business.schedule.work": true }] };
-    query.$and.push(date);
-
-  }*/
-  /* User.find(query, (err, docs) => {
-     if (!err) {
-       res.send({ "resultat": docs, "query": query });
-     }
-   })*/
-  /*
-    User.aggregate(
-      [
-        {
-          "$geoNear": {
-            "near": {
-              "type": "Point",
-              "coordinates": [req.body.lng, req.body.lat]
-            },
-            "distanceField": "distance",
-            "spherical": true,
-            "maxDistance": 1000000000,
-            "query": { "role": "business", "business.role": "saloon" },
-          }
-        },
-        {
-          "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
-        }
-      ],
-      function (err, results) {
-        var saloons = results;
-        User.aggregate(
-          [
-            {
-              "$geoNear": {
-                "near": {
-                  "type": "Point",
-                  "coordinates": [req.body.location.lng, req.body.location.lat]
-                },
-                "distanceField": "distance",
-                "spherical": true,
-                "maxDistance": req.body.distance[1],
-                "maxDistance": req.body.distance[0],
-                "query": { "role": "business", "business.role": "freelance" },
-              }
-            },
-            {
-              "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
-            }
-          ],
-          function (err, results) {
-            var freelancers = results;
-  
-            res.status(201).send({ "saloons": saloons, "freelancers": freelancers });
-          }
-        )
-      }
-    )*/
 
 }
 
@@ -1065,3 +984,6 @@ function sendPushNotification(message) {
 }
 
 
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
