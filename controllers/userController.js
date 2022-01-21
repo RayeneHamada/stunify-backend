@@ -3,6 +3,7 @@ const mongoose = require('mongoose'),
   User = mongoose.model('Users');
 Prestation = mongoose.model('Prestations');
 Notification = mongoose.model('Notifications');
+const {sendNotification} = require('../controllers/notificationController');
 const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
@@ -297,13 +298,13 @@ exports.completeBusinessSignup = async function (req, res) {
         User.updateOne({ _id: user._id }, user).then(
           () => {
 
-            res.status(201).json({
+            res.status(201).send({
               message: user.business.role + ' updated successfully!'
             });
           }
         ).catch(
           (error) => {
-            res.status(400).json({
+            res.status(400).send({
               error: error
             });
           }
@@ -871,16 +872,8 @@ exports.addFeedBack = function (req, res) {
             notification.receiver = req.body.businessId;
             notification.type = 'feedback';
             notification.content = 'vous a noté' + rate + " étoiles";
-            notification.save((err, doc) => {
-              if (!err) {
-                return res.status(201).json({
-                  message: 'Feedback added successfully!'
-                });
-              }
-              else {
-                return res.json({ 'error': err });
-              }
-            });
+            sendNotification(notification);
+            
           }
         ).catch(
           (error2) => {

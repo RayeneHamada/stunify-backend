@@ -10,11 +10,12 @@ require('./models/subscriptionModel');
 
 require('./config/dbConfig');
 
+const http = require("http");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const path = require('path');
-
+const socketio = require("socket.io");
 
 
 
@@ -31,6 +32,9 @@ app.use(bodyParser.urlencoded({ extended: false }))
  
 app.use(bodyParser.json());
 
+//import utils
+const WebSockets = require("./utils/WebSockets.js");
+
 //import routes
 const userRoute = require('./routes/userRoute');
 const categoryRoute = require('./routes/categoryRoute');
@@ -44,4 +48,25 @@ app.use('/booking', appointmentRoute);
 app.use('/subscription', subscriptionRoute);
 app.use('/notification', notificationRoute);
 app.use(express.static(path.join(__dirname, 'public')));
-module.exports = app;
+
+/** catch 404 and forward to error handler */
+app.use('*', (req, res) => {
+    return res.status(404).json({
+      success: false,
+      message: 'API endpoint doesnt exist'
+    })
+});
+  
+/** Create HTTP server. */
+const server = http.createServer(app);
+/** Create socket connection */
+global.WebSockets = WebSockets;
+global.io = socketio(server);
+global.io.on('connection', WebSockets.connection);
+
+/** Listen on provided port, on all network interfaces. */
+server.listen(process.env.PORT);
+/** Event listener for HTTP server "listening" event. */
+server.on("listening", () => {
+  console.log('it works')
+});

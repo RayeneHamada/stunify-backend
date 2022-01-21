@@ -5,7 +5,7 @@ User = mongoose.model('Users');
 Notification = mongoose.model('Notifications');
 var moment = require('moment');
 const ObjectId = mongoose.Types.ObjectId;
-
+const {sendNotification} = require('../controllers/notificationController');
 
 
 exports.book = function (req, res, next) {
@@ -46,28 +46,16 @@ exports.book = function (req, res, next) {
                           notification.receiver = req.body.business;
                           notification.type = 'appointment';
                           notification.content = 'a réservé un rendez-vous';
-                          notification.save((err, doc) => {
-                            if (!err) {
-                              notification = new Notification();
-                              notification.sender = req.body.business;
-                              notification.receiver = req._id;
-                              notification.type = 'appointment';
-                              notification.content = 'a reçu votre demande de rendez-vous';
-                              notification.save((err, doc) => {
-                                if (!err) {
-                                  return res.status(201).json({
-                                    message: 'Appointment added successfully!'
-                                  });
-                                }
-                                else {
-                                  return res.json({ 'error': err });
-                                }
-                              });
-                            }
-                            else {
-                              return res.json({ 'error': err });
-                            }
-                          });
+                          sendNotification(notification);
+
+                          notification = new Notification();
+                          notification.sender = req.body.business;
+                          notification.receiver = req._id;
+                          notification.type = 'appointment';
+                          notification.content = 'a reçu votre demande de rendez-vous';
+                          sendNotification(notification);
+                          
+                           
                         }
                       ).catch(
                         (error2) => {
