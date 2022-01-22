@@ -44,7 +44,7 @@ class WebSockets {
   }
 
   getSocketId(clientId) {
-    return WebSockets.#users.find(user => user.userId == clientId).socketId;
+    return WebSockets.#users.find(user => user.userId == clientId);
   }
 }
 

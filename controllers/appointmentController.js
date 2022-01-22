@@ -34,10 +34,7 @@ exports.book = function (req, res, next) {
 
                 User.findOne({ _id: req._id },
                   (err, personal) => {
-                    console.log(req._id);
                     if (personal) {
-                      console.log('hola');
-
                       User.updateOne({ _id: req._id }, { $push: { "personal.appointments": new mongoose.mongo.ObjectId(doc._id) } }).then(
                         (result, error1) => {
 
