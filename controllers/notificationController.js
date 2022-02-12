@@ -8,9 +8,12 @@ Notification = mongoose.model('Notifications');
 exports.sendNotification = async (notification) => {
   try {
     await notification.save();
-    let socketUser = WebSockets.getSocketId(notification.receiver);
+    let socketUser = WebSockets.getSocketId(notification.receiver+"");
+
     if(socketUser)
-    global.io.sockets.to(socketUser.socketId).emit('notification', notification);
+    {
+      global.io.sockets.to(socketUser.socketId).emit('notification', notification);
+    }
   }
   catch (err) {
     console.log('err' + err);

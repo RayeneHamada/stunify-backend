@@ -37,7 +37,6 @@ exports.book = function (req, res, next) {
                     if (personal) {
                       User.updateOne({ _id: req._id }, { $push: { "personal.appointments": new mongoose.mongo.ObjectId(doc._id) } }).then(
                         (result, error1) => {
-
                           notification = new Notification();
                           notification.sender = req._id;
                           notification.receiver = req.body.business;
@@ -52,7 +51,7 @@ exports.book = function (req, res, next) {
                           notification.content = 'a reçu votre demande de rendez-vous';
                           sendNotification(notification);
                           
-                           
+                           res.status(200).json({success:true,message:"le rendez-vous est ajouté avec succes"})
                         }
                       ).catch(
                         (error2) => {

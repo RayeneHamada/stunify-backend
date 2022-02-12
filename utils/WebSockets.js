@@ -16,7 +16,7 @@ class WebSockets {
       console.log(client.id);
       WebSockets.#users.push({
         socketId: client.id,
-        userId: userId,
+        userId: userId.userId,
       });
     });
 
