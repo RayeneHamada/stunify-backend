@@ -39,6 +39,7 @@
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
     "socket.io": "^4.4.1",
+    "stripe": "^8.202.0",
     "twilio": "^3.65.0"
   }
 }

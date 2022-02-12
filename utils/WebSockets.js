@@ -13,6 +13,7 @@ class WebSockets {
 
     // add identity of user mapped to the socket id
     client.on("identity", (userId) => {
+      console.log(client.id);
       WebSockets.#users.push({
         socketId: client.id,
         userId: userId,
