@@ -28,7 +28,6 @@ router.get('/freelance/:id', main_controller.getFreelance);
 router.get('/prestations/:id', main_controller.getPrestations);
 router.get('/myPrestations',jwtHelper.verifyBusinessJwtToken, main_controller.myPrestations);
 router.get('/mySchedule',jwtHelper.verifyBusinessJwtToken, main_controller.mySchedule);
-router.get('/test', main_controller.testNotif);
 router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
 router.get('/myDescription',jwtHelper.verifyBusinessJwtToken, main_controller.myDescription);
 router.get('/myProfile',jwtHelper.verifyJwtToken, main_controller.myProfile);
@@ -36,6 +35,7 @@ router.get('/availableSlots/:business/:duration/:year/:month/:day', main_control
 
 router.post('/addFeedBack', main_controller.addFeedBack);
 
+router.get('/test', main_controller.testNotif);
 
 
 

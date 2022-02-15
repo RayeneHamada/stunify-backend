@@ -18,12 +18,11 @@ const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
 var moment = require('moment');
 var admin = require("firebase-admin");
-const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-ca0c5-firebase-adminsdk-3n4rl-a4e95e9ac0.json');
+const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-test-firebase-adminsdk-dva8l-21635a5175.json');
 console.log(pathToServiceAccount);
 const serviceAccount = require(pathToServiceAccount);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://stunify-c28a5-default-rtdb.europe-west1.firebasedatabase.app"
 });
 
 var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
@@ -72,6 +71,7 @@ exports.sendCodeTest = function (req, res) {
         var user = new User();
         user.activated = true;
         user.phoneNumber = req.body.phoneNumber;
+        user.fcm_id = req.body.fcm_id;
         user.save((err, doc) => {
           if (!err) {
             return res.json({ operatiton: "signup", verified: true, "token": doc.generateJwt() });
@@ -106,6 +106,7 @@ exports.sendBusinessCodeTest = function (req, res) {
         user.business.catrgories = req.body.categories;
         user.business.businessName = req.body.businessName;
         user.business.role = req.body.role;
+        user.fcm_id = req.body.fcm_id;
         if (user.business.role == "freelance") {
           user.business.mobility = req.body.mobility;
         }
@@ -960,20 +961,27 @@ exports.testNotif = (req, res) => {
     notification: {
       title: 'New Messaeg',
       body: 'test test 12 12',
-    },
-    topic: "general"
-  }
-  sendPushNotification(message)
+    }  }
+  sendPushNotification(message);
+  res.send("mnadhem");
 }
 
 function sendPushNotification(message) {
-  admin.messaging().send(message)
-    .then((response) => {
-      console.log('Scuccessfully sent message:', response);
-    })
-    .catch((error) => {
-      console.log('Error sending message:', error);
-    })
+  User.findOne({ _id: req._id },'fcm_id').
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ status: false, message: 'Business record not found.' });
+      else {
+        admin.messaging().sendToDevice(user.fcm_id,message)
+        .then((response) => {
+          console.log(user.fcm_id);
+          console.log('Scuccessfully sent message:', response);
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        })      }
+    });
+  
 }
 
 

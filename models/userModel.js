@@ -24,7 +24,9 @@ var userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-
+  fcm_id:{
+    type:String
+  },
   email: {
     type: String,
     lowercase: true,
