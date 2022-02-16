@@ -962,12 +962,12 @@ exports.testNotif = (req, res) => {
       title: 'New Messaeg',
       body: 'test test 12 12',
     }  }
-  sendPushNotification(message);
+  sendPushNotification(message,req.body.userId);
   res.send("mnadhem");
 }
 
-function sendPushNotification(message) {
-  User.findOne({ _id: req._id },'fcm_id').
+function sendPushNotification(message,userId) {
+  User.findOne({ _id: userId },'fcm_id').
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
