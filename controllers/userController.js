@@ -762,10 +762,10 @@ exports.myDescription = function (req, res) {
 
 exports.getSaloon = function (req, res) {
 
-  User.findOne({ _id: req.params.id }).
-    populate({ path: 'feedbacks.owner', select: 'firstName' }).
-    populate({ path: 'feedbacks.owner', select: 'lastName' }).
-    populate({ path: 'feedbacks.owner', select: 'profile_image' }).
+  User.findOne({ _id: req.params.id },'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
+    populate({ path: 'business.feedbacks.owner', select: 'firstName' }).
+    populate({ path: 'business.feedbacks.owner', select: 'lastName' }).
+    populate({ path: 'business.feedbacks.owner', select: 'profile_image' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ message: 'saloon record not found.' });
@@ -784,15 +784,14 @@ exports.addFeedBack = function (req,res) {
         return res.status(404).json({ status: false, message: 'Business record not found.' });
       else {
         let feedback_nb = business.business.feedbacks.length +1;
-        console.log(feedback_nb);
         business.business.rate.reception += req.body.reception/feedback_nb;
         business.business.rate.atmosphere += req.body.atmosphere/feedback_nb;
         business.business.rate.cleanliness += req.body.cleanliness/feedback_nb;
         business.business.rate.prestation_quality += req.body.prestation_quality/feedback_nb;
-        business.business.rate.avg = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
+        business.business.rate.total = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
         rate = business.business.rate;
         let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
-        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": avg}, "feedback_content": req.body.feedback_content, "owner": req._id },$set:{"business.rate":rate} } }).then(
+        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": avg}, "feedback_content": req.body.feedback_content, "owner": req._id } },$set:{"business.rate":rate} }).then(
           (result, error1) => {
             /*notification = new Notification();
             notification.sender = req._id;
@@ -816,9 +815,11 @@ exports.addFeedBack = function (req,res) {
     });
 }
 
+
+
 exports.getFreelance = function (req, res) {
 
-  User.findOne({ _id: req.params.id }).
+  User.findOne({ _id: req.params.id },'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo').
     populate({ path: 'feedbacks.owner', select: 'firstName' }).
     populate({ path: 'feedbacks.owner', select: 'lastName' }).
     populate({ path: 'feedbacks.owner', select: 'profile_image' }).
