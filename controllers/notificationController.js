@@ -6,7 +6,7 @@ Notification = mongoose.model('Notifications');
 var admin = require("firebase-admin");
 const path = require('path');
 
-const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-344215-firebase-adminsdk-urz5z-2673b820be.json');
+const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-ch-firebase-adminsdk-g5tca-f31e0c0ae5.json');
 const serviceAccount = require(pathToServiceAccount);
 
 admin.initializeApp({
