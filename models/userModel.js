@@ -95,7 +95,6 @@ var userSchema = new mongoose.Schema({
       type: String
     },
     rate: {
-      avg: {
         total: {
           type: Number,
           default: 0,
@@ -116,7 +115,7 @@ var userSchema = new mongoose.Schema({
           type: Number,
           default: 0
         }
-      }
+      
     },
     feedbacks: [{
       owner: {

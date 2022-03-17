@@ -789,9 +789,10 @@ exports.addFeedBack = function (req,res) {
         business.business.rate.atmosphere += req.body.atmosphere/feedback_nb;
         business.business.rate.cleanliness += req.body.cleanliness/feedback_nb;
         business.business.rate.prestation_quality += req.body.prestation_quality/feedback_nb;
-        business.buesiness.rate.avg = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
+        business.business.rate.avg = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
+        rate = business.business.rate;
         let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
-        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": rate}, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
+        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": avg}, "feedback_content": req.body.feedback_content, "owner": req._id },$set:{"business.rate":rate} } }).then(
           (result, error1) => {
             /*notification = new Notification();
             notification.sender = req._id;
