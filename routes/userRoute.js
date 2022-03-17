@@ -33,7 +33,7 @@ router.get('/myDescription',jwtHelper.verifyBusinessJwtToken, main_controller.my
 router.get('/myProfile',jwtHelper.verifyJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 
-router.post('/addFeedBack', main_controller.addFeedBack);
+router.post('/addFeedBack',jwtHelper.verifyUserJwtToken, main_controller.addFeedBack);
 
 
 

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 mongoose
-.connect("mongodb+srv://Rayene:tfg@cluster0.odqre.mongodb.net/stunify?retryWrites=true&w=majority", {
+.connect( process.env.DATA_BASE_CONNECTION_URL, {
 useUnifiedTopology: true,
 useNewUrlParser: true,
 });

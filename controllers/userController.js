@@ -61,7 +61,6 @@ exports.sendCodeTest = function (req, res) {
   User.findOne({ phoneNumber: req.body.phoneNumber },
     (err, user) => {
       if (!user) {
-        console.log('ahla1');
         var user = new User();
         user.activated = true;
         user.phoneNumber = req.body.phoneNumber;
@@ -778,6 +777,44 @@ exports.getSaloon = function (req, res) {
 
 }
 
+exports.addFeedBack = function (req,res) {
+  User.findOne({ _id: req.body.businessId },
+    (err, business) => {
+      if (!business)
+        return res.status(404).json({ status: false, message: 'Business record not found.' });
+      else {
+        let feedback_nb = business.business.feedbacks.length +1;
+        console.log(feedback_nb);
+        business.business.rate.reception += req.body.reception/feedback_nb;
+        business.business.rate.atmosphere += req.body.atmosphere/feedback_nb;
+        business.business.rate.cleanliness += req.body.cleanliness/feedback_nb;
+        business.business.rate.prestation_quality += req.body.prestation_quality/feedback_nb;
+        business.buesiness.rate.avg = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
+        let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
+        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": rate}, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
+          (result, error1) => {
+            /*notification = new Notification();
+            notification.sender = req._id;
+            notification.receiver = req.body.businessId;
+            notification.type = 'feedback';
+            notification.content = 'vous a noté' + rate + " étoiles";
+            sendNotification(notification);*/
+            res.status(200).send({success:true,message:"Votre feedback a été ajouté avec succés."})
+            
+          }
+        ).catch(
+          (error2) => {
+            res.status(400).json({
+              error: error2
+            });
+          }
+        );
+
+      }
+
+    });
+}
+
 exports.getFreelance = function (req, res) {
 
   User.findOne({ _id: req.params.id }).
@@ -851,36 +888,6 @@ exports.mySchedule = function (req, res) {
       }
     });
 
-}
-
-exports.addFeedBack = function (req, res) {
-  User.findOne({ _id: req.body.businessId },
-    (err, business) => {
-      if (!business)
-        return res.status(404).json({ status: false, message: 'Business record not found.' });
-      else {
-        var rate = (req.body.quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
-        User.updateOne({ _id: business._id }, { $push: { feedbacks: { "quality": req.body.quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "rate": rate, "feedback_content": req.body.feedback_content, "owner": req._id } } }).then(
-          (result, error1) => {
-            notification = new Notification();
-            notification.sender = req._id;
-            notification.receiver = req.body.businessId;
-            notification.type = 'feedback';
-            notification.content = 'vous a noté' + rate + " étoiles";
-            sendNotification(notification);
-            
-          }
-        ).catch(
-          (error2) => {
-            res.status(400).json({
-              error: error2
-            });
-          }
-        );
-
-      }
-
-    });
 }
 
 function sortPrestations(prestations) {

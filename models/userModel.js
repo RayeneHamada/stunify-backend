@@ -24,8 +24,8 @@ var userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  fcm_id:{
-    type:String
+  fcm_id: {
+    type: String
   },
   email: {
     type: String,
@@ -95,8 +95,62 @@ var userSchema = new mongoose.Schema({
       type: String
     },
     rate: {
-      type: Number,
+      avg: {
+        total: {
+          type: Number,
+          default: 0,
+        },
+        reception: {
+          type: Number,
+          default: 0
+        },
+        cleanliness: {
+          type: Number,
+          default: 0
+        },
+        atmosphere: {
+          type: Number,
+          default: 0
+        },
+        prestation_quality: {
+          type: Number,
+          default: 0
+        }
+      }
     },
+    feedbacks: [{
+      owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Users"
+      },
+      feedback_content:String,
+      rate: {
+        avg: {
+          type: Number,
+          default: 0,
+        },
+        reception: {
+          type: Number,
+          default: 0
+        },
+        cleanliness: {
+          type: Number,
+          default: 0
+        },
+        atmosphere: {
+          type: Number,
+          default: 0
+        },
+        prestation_quality: {
+          type: Number,
+          default: 0
+        }
+      },
+      created_at: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     catrgories: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Categories"
@@ -114,8 +168,8 @@ var userSchema = new mongoose.Schema({
 
     prestations: [{
 
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Prestations"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Prestations"
     }],
     schedule: [{
       day: {
@@ -141,39 +195,7 @@ var userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointments"
     }],
-    feedbacks: [{
-      reception: {
-        type: Number,
-        default: 3,
-      },
-      cleanliness: {
-        type: Number,
-        default: 3,
-      },
-      atmosphere: {
-        type: Number,
-        default: 3,
-      },
-      quality: {
-        type: Number,
-        default: 3,
-      },
-      rate: {
-        type: Number,
-        default: 3
-      },
-      feedback_content: {
-        type: String,
-      },
-      owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Users"
-      },
-      created_at: {
-        type: Date,
-        default: Date.now
-      }
-    }],
+
   },
   created_at: {
     type: Date,

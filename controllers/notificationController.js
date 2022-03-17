@@ -7,7 +7,6 @@ var admin = require("firebase-admin");
 const path = require('path');
 
 const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-344215-firebase-adminsdk-urz5z-2673b820be.json');
-console.log(pathToServiceAccount);
 const serviceAccount = require(pathToServiceAccount);
 
 admin.initializeApp({
