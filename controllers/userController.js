@@ -3,7 +3,7 @@ const mongoose = require('mongoose'),
   User = mongoose.model('Users');
 Prestation = mongoose.model('Prestations');
 Notification = mongoose.model('Notifications');
-const {sendNotification} = require('../controllers/notificationController');
+const { sendNotification } = require('../controllers/notificationController');
 const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
@@ -682,11 +682,11 @@ exports.search = (req, res) => {
           "query": {
             "role": "business",
             "business.businessName": regex,
-            [dateQuery]:true
+            [dateQuery]: true
           },
         }
       },
-      
+
       {
         '$lookup':
         {
@@ -762,10 +762,8 @@ exports.myDescription = function (req, res) {
 
 exports.getSaloon = function (req, res) {
 
-  User.findOne({ _id: req.params.id },'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
-    populate({ path: 'business.feedbacks.owner', select: 'firstName' }).
-    populate({ path: 'business.feedbacks.owner', select: 'lastName' }).
-    populate({ path: 'business.feedbacks.owner', select: 'profile_image' }).
+  User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
+  populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ message: 'saloon record not found.' });
@@ -777,30 +775,37 @@ exports.getSaloon = function (req, res) {
 
 }
 
-exports.addFeedBack = function (req,res) {
+exports.addFeedBack = function (req, res) {
   User.findOne({ _id: req.body.businessId },
     (err, business) => {
       if (!business)
         return res.status(404).json({ status: false, message: 'Business record not found.' });
       else {
-        let feedback_nb = business.business.feedbacks.length +1;
-        business.business.rate.reception += req.body.reception/feedback_nb;
-        business.business.rate.atmosphere += req.body.atmosphere/feedback_nb;
-        business.business.rate.cleanliness += req.body.cleanliness/feedback_nb;
-        business.business.rate.prestation_quality += req.body.prestation_quality/feedback_nb;
-        business.business.rate.total = (business.business.rate.reception+business.business.rate.atmosphere+business.business.rate.cleanliness+business.business.rate.prestation_quality)/4;
+        let feedback_nb = business.business.feedbacks.length + 1;
+        business.business.rate.reception += req.body.reception / feedback_nb;
+        business.business.rate.atmosphere += req.body.atmosphere / feedback_nb;
+        business.business.rate.cleanliness += req.body.cleanliness / feedback_nb;
+        business.business.rate.prestation_quality += req.body.prestation_quality / feedback_nb;
+        business.business.rate.total = (business.business.rate.reception + business.business.rate.atmosphere + business.business.rate.cleanliness + business.business.rate.prestation_quality) / 4;
         rate = business.business.rate;
         let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
-        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate:{"prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": avg}, "feedback_content": req.body.feedback_content, "owner": req._id } },$set:{"business.rate":rate} }).then(
+        User.updateOne({ _id: business._id }, { $push: { "business.feedbacks": { rate: { "prestation_quality": req.body.prestation_quality, "atmosphere": req.body.atmosphere, "cleanliness": req.body.cleanliness, "reception": req.body.reception, "avg": avg }, "feedback_content": req.body.feedback_content, "owner": req._id } }, $set: { "business.rate": rate } }).then(
           (result, error1) => {
-            /*notification = new Notification();
+            notification = new Notification();
             notification.sender = req._id;
             notification.receiver = req.body.businessId;
             notification.type = 'feedback';
-            notification.content = 'vous a noté' + rate + " étoiles";
-            sendNotification(notification);*/
-            res.status(200).send({success:true,message:"Votre feedback a été ajouté avec succés."})
-            
+            notification.content = req.firstName+' '+req.lastName+' vous a noté' + avg.toFixed(1) + " étoiles";
+            sendNotification(notification);
+            const message = {
+              notification: {
+                title: 'Nouvelle réservation',
+                body: req.firstName+' '+req.lastName+' vous a noté' + avg.toFixed(1) + " étoiles",
+              }
+            }
+            sendPushNotification(message, business.fcm_id);
+            res.status(200).send({ success: true, message: "Votre feedback a été ajouté avec succés." })
+
           }
         ).catch(
           (error2) => {
@@ -819,10 +824,8 @@ exports.addFeedBack = function (req,res) {
 
 exports.getFreelance = function (req, res) {
 
-  User.findOne({ _id: req.params.id },'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo').
-    populate({ path: 'feedbacks.owner', select: 'firstName' }).
-    populate({ path: 'feedbacks.owner', select: 'lastName' }).
-    populate({ path: 'feedbacks.owner', select: 'profile_image' }).
+  User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo').
+    populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ message: 'Freelance record not found.' });

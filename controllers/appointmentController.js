@@ -41,7 +41,7 @@ exports.book = function (req, res, next) {
                           notification.sender = req._id;
                           notification.receiver = req.body.business;
                           notification.type = 'appointment';
-                          notification.content = 'a réservé un rendez-vous';
+                          notification.content = personal.firstName+" "+personal.lastName+'a réservé un rendez-vous';
                           sendNotification(notification);
                           const message = {
                             notification: {
@@ -54,8 +54,9 @@ exports.book = function (req, res, next) {
                           notification.sender = req.body.business;
                           notification.receiver = req._id;
                           notification.type = 'appointment';
-                          notification.content = 'a reçu votre demande de rendez-vous';
+                          notification.content = business.business.businessName+'a reçu votre demande de rendez-vous';
                           sendNotification(notification);
+
                           
                            res.status(200).json({success:true,message:"le rendez-vous est ajouté avec succes"})
                         }
