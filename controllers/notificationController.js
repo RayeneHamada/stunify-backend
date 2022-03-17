@@ -3,6 +3,16 @@ const mongoose = require('mongoose'),
       Subscription = mongoose.model('Subscriptions');
 User = mongoose.model('Users');
 Notification = mongoose.model('Notifications');
+var admin = require("firebase-admin");
+const path = require('path');
+
+const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-344215-firebase-adminsdk-urz5z-2673b820be.json');
+console.log(pathToServiceAccount);
+const serviceAccount = require(pathToServiceAccount);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 
 exports.sendNotification = async (notification) => {
@@ -19,6 +29,20 @@ exports.sendNotification = async (notification) => {
     console.log('err' + err);
   }
 }
+
+
+exports.sendPushNotification = (message,fcm_id) => {
+
+        admin.messaging().sendToDevice(fcm_id,message)
+        .then((response) => {
+          console.log('Scuccessfully sent message push notification');
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        })      
+  
+}
+
 
 
 exports.fetchAll = function (req, res) {

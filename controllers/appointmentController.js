@@ -5,7 +5,7 @@ User = mongoose.model('Users');
 Notification = mongoose.model('Notifications');
 var moment = require('moment');
 const ObjectId = mongoose.Types.ObjectId;
-const {sendNotification} = require('../controllers/notificationController');
+const {sendNotification, sendPushNotification} = require('../controllers/notificationController');
 
 
 exports.book = function (req, res, next) {
@@ -43,6 +43,12 @@ exports.book = function (req, res, next) {
                           notification.type = 'appointment';
                           notification.content = 'a réservé un rendez-vous';
                           sendNotification(notification);
+                          const message = {
+                            notification: {
+                              title: 'Nouvelle réservation',
+                              body: personal.firstName+" "+personal.lastName+" a passé une nouvelle résérvation le "+new Date(appointment.start_date_time).getDate()+"/"+(new Date(appointment.start_date_time).getMonth()+1),
+                            }  }
+                          sendPushNotification(message,business.fcm_id);
 
                           notification = new Notification();
                           notification.sender = req.body.business;

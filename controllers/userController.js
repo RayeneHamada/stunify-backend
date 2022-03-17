@@ -17,13 +17,7 @@ const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
 var moment = require('moment');
-var admin = require("firebase-admin");
-const pathToServiceAccount = path.join(__dirname, '../config/firebase/stunify-test-firebase-adminsdk-dva8l-21635a5175.json');
-console.log(pathToServiceAccount);
-const serviceAccount = require(pathToServiceAccount);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+
 
 var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 exports.sendCode = function (req, res) {
@@ -956,33 +950,7 @@ exports.availableSlots = function (req, res) {
 
 }
 
-exports.testNotif = (req, res) => {
-  const message = {
-    notification: {
-      title: 'New Messaeg',
-      body: 'test test 12 12',
-    }  }
-  sendPushNotification(message,req.body.userId);
-  res.send("mnadhem");
-}
 
-function sendPushNotification(message,userId) {
-  User.findOne({ _id: userId },'fcm_id').
-    exec((err, user) => {
-      if (!user)
-        return res.status(404).json({ status: false, message: 'Business record not found.' });
-      else {
-        admin.messaging().sendToDevice(user.fcm_id,message)
-        .then((response) => {
-          console.log(user.fcm_id);
-          console.log('Scuccessfully sent message:', response);
-        })
-        .catch((error) => {
-          console.log('Error sending message:', error);
-        })      }
-    });
-  
-}
 
 
 function escapeRegex(text) {

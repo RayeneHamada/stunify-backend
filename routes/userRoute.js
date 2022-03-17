@@ -35,7 +35,6 @@ router.get('/availableSlots/:business/:duration/:year/:month/:day', main_control
 
 router.post('/addFeedBack', main_controller.addFeedBack);
 
-router.get('/test', main_controller.testNotif);
 
 
 
