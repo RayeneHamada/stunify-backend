@@ -3,7 +3,7 @@ const mongoose = require('mongoose'),
   User = mongoose.model('Users');
 Prestation = mongoose.model('Prestations');
 Notification = mongoose.model('Notifications');
-const { sendNotification } = require('../controllers/notificationController');
+const { sendNotification,sendPushNotification } = require('../controllers/notificationController');
 const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
@@ -782,10 +782,10 @@ exports.addFeedBack = function (req, res) {
         return res.status(404).json({ status: false, message: 'Business record not found.' });
       else {
         let feedback_nb = business.business.feedbacks.length + 1;
-        business.business.rate.reception += req.body.reception / feedback_nb;
-        business.business.rate.atmosphere += req.body.atmosphere / feedback_nb;
-        business.business.rate.cleanliness += req.body.cleanliness / feedback_nb;
-        business.business.rate.prestation_quality += req.body.prestation_quality / feedback_nb;
+        business.business.rate.reception = ((business.business.rate.reception*(feedback_nb-1))+req.body.reception)/feedback_nb;
+        business.business.rate.atmosphere = ((business.business.rate.atmosphere*(feedback_nb-1))+req.body.atmosphere)/feedback_nb;
+        business.business.rate.cleanliness = ((business.business.rate.cleanliness*(feedback_nb-1))+req.body.cleanliness)/feedback_nb;
+        business.business.rate.prestation_quality = ((business.business.rate.prestation_quality*(feedback_nb-1))+req.body.prestation_quality)/feedback_nb;
         business.business.rate.total = (business.business.rate.reception + business.business.rate.atmosphere + business.business.rate.cleanliness + business.business.rate.prestation_quality) / 4;
         rate = business.business.rate;
         let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
@@ -795,12 +795,12 @@ exports.addFeedBack = function (req, res) {
             notification.sender = req._id;
             notification.receiver = req.body.businessId;
             notification.type = 'feedback';
-            notification.content = req.firstName+' '+req.lastName+' vous a noté' + avg.toFixed(1) + " étoiles";
+            notification.content = req.firstName+' '+req.lastName+' vous a noté ' + avg.toFixed(1) + " étoiles";
             sendNotification(notification);
             const message = {
               notification: {
                 title: 'Nouvelle réservation',
-                body: req.firstName+' '+req.lastName+' vous a noté' + avg.toFixed(1) + " étoiles",
+                body: req.firstName+' '+req.lastName+' vous a noté ' + avg.toFixed(1) + " étoiles",
               }
             }
             sendPushNotification(message, business.fcm_id);

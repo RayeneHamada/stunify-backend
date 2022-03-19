@@ -2,10 +2,10 @@ const jwt = require('jsonwebtoken');
 
 module.exports.verifyJwtToken = (req, res, next) => {
     var token;
-    if ('authorization' in req.headers)
-       { token = req.headers['authorization'].split(' ')[1];
+    if ('authorization' in req.headers) {
+        token = req.headers['authorization'].split(' ')[1];
     }
-        
+
 
     if (!token)
         return res.status(403).send({ auth: false, message: 'No token provided.' });
@@ -16,8 +16,11 @@ module.exports.verifyJwtToken = (req, res, next) => {
                     return res.status(500).send({ auth: false, message: 'Token authentication failed.' });
                 else {
                     req._id = decoded._id;
+                    req.firsName = decoded.firstName;
+                    req.lastName = decoded.lastName;
+                    req.profilePicture = decoded.profilePicture;
                     next();
-                    
+
                 }
             }
         )
@@ -26,10 +29,10 @@ module.exports.verifyJwtToken = (req, res, next) => {
 
 module.exports.verifyUserJwtToken = (req, res, next) => {
     var token;
-    if ('authorization' in req.headers)
-       { token = req.headers['authorization'].split(' ')[1];
+    if ('authorization' in req.headers) {
+        token = req.headers['authorization'].split(' ')[1];
     }
-        
+
 
     if (!token)
         return res.status(403).send({ auth: false, message: 'No token provided.' });
@@ -39,13 +42,15 @@ module.exports.verifyUserJwtToken = (req, res, next) => {
                 if (err)
                     return res.status(500).send({ auth: false, message: 'Token authentication failed.' });
                 else {
-                    if(decoded.role != 'user')
-                    {
+                    if (decoded.role != 'user') {
                         return res.status(403).send({ auth: false, message: 'You should respect users privacy' });
                     }
-                    else{
+                    else {
                         req._id = decoded._id;
-                    next();
+                        req.firstName = decoded.firstName;
+                        req.lastName = decoded.lastName;
+                        req.profilePicture = decoded.profilePicture;
+                        next();
                     }
                 }
             }
@@ -55,10 +60,10 @@ module.exports.verifyUserJwtToken = (req, res, next) => {
 
 module.exports.verifyBusinessJwtToken = (req, res, next) => {
     var token;
-    if ('authorization' in req.headers)
-       { token = req.headers['authorization'].split(' ')[1];
+    if ('authorization' in req.headers) {
+        token = req.headers['authorization'].split(' ')[1];
     }
-        
+
 
     if (!token)
         return res.status(403).send({ auth: false, message: 'No token provided.' });
@@ -68,39 +73,17 @@ module.exports.verifyBusinessJwtToken = (req, res, next) => {
                 if (err)
                     return res.status(500).send({ auth: false, message: 'Token authentication failed.' });
                 else {
-                    if(decoded.role != 'business')
-                    {
+                    if (decoded.role != 'business') {
                         return res.status(403).send({ auth: false, message: 'Permission Denied' });
                     }
-                    else{
+                    else {
                         req._id = decoded._id;
-                    next();
+                        req.firstName = decoded.firstName;
+                        req.lastName = decoded.lastName;
+                        req.profilePicture = decoded.profilePicture;
+                        next();
                     }
-                    
-                }
-            }
-        )
-    }
-}
 
-module.exports.verifyPasswordResetJwtToken = (req, res, next) => {
-    var token;
-    if ('authorization' in req.headers)
-       { token = req.headers['authorization'].split(' ')[1];
-    }
-        
-
-    if (!token)
-        return res.status(403).send({ auth: false, message: 'No token provided.' });
-    else {
-        jwt.verify(token, process.env.JWT_SECRET,
-            (err, decoded) => {
-                if (err)
-                    return res.status(500).send({ auth: false, message: 'Token authentication failed.' });
-                else {
-                    req._id = decoded.id;
-                    next();
-                    
                 }
             }
         )

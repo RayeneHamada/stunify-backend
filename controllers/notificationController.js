@@ -31,7 +31,7 @@ exports.sendNotification = async (notification) => {
 
 
 exports.sendPushNotification = (message,fcm_id) => {
-
+        console.log('holca');
         admin.messaging().sendToDevice(fcm_id,message)
         .then((response) => {
           console.log('Scuccessfully sent message push notification');
