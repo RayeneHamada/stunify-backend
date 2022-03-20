@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 var subscriptionSchema = new mongoose.Schema({
 
-    name: {
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Users"
+    },
+    plan: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Plans"
+    },
+    subscriptionId: {
+        type: String
+    },
+    state: {
         type: String,
-        unique:true,
-    },
-    // in months
-    duration : {
-        type: Number,
-        unique:true,
-    },
-    price: {
-        type: Number
+        default: 'unpaid'
     }
-  });
+});
 
 
 mongoose.model('Subscriptions', subscriptionSchema);

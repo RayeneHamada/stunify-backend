@@ -3,7 +3,7 @@ const mongoose = require('mongoose'),
   User = mongoose.model('Users');
 Prestation = mongoose.model('Prestations');
 Notification = mongoose.model('Notifications');
-const { sendNotification,sendPushNotification } = require('../controllers/notificationController');
+const { sendNotification, sendPushNotification } = require('../controllers/notificationController');
 const path = require('path');
 const passport = require('passport');
 const _ = require('lodash');
@@ -17,6 +17,7 @@ const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
 var moment = require('moment');
+const stripe = require('stripe')('sk_test_51KP08pLMtIUZpRLREAa8uysOP9BeHwZuOX88GEO99T5kXcOKjkKoVc4b3kuqRNdwhUH1PhRxIgAWlTNkkUoWhqe500boZr5U3p');
 
 
 var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
@@ -237,74 +238,87 @@ exports.verifCode = function (req, res) {
   })
 }
 
-exports.completeSubscription = function (req, res) {
-
-  User.findOne({ _id: req._id },
-    (err, user) => {
-      if (!user)
-        return res.status(404).json({ message: 'User record not found.' });
-      else {
-        user.firstName = req.body.firstName;
-        user.lastName = req.body.lastName;
-        user.email = req.body.email;
-
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-
-            res.status(201).json({
-              message: user.role + ' updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
-            console.log(error);
-            res.status(400).json({
-              error: error
-            });
-          }
-        );
-      }
+exports.completeSubscription = async (req, res) => {
+  try {
+    user = await User.findOne({ _id: req._id }).exec();
+    user.firstName = req.body.firstName;
+    user.lastName = req.body.lastName;
+    user.email = req.body.email;
+    const customer = await stripe.customers.create({
+      email: req.body.email,
     });
+    user.customerId = customer.id;
+    User.updateOne({ _id: user._id }, user).then(
+      () => {
+
+        res.status(201).json({
+          message: user.role + ' updated successfully!'
+        });
+      }
+    ).catch(
+      (error) => {
+        console.log(error);
+        res.status(400).json({
+          error: error
+        });
+      }
+    );
+
+  }
+  catch (err) {
+    console.log(error);
+    res.status(400).json({
+      error: err
+    });
+  }
 
 }
 
 exports.completeBusinessSignup = async function (req, res) {
+
   const loc = await geocoder.geocode({
     address: req.body.address.street + " " + req.body.address.city,
     //country: "Switzerland",
     country: req.body.country,
     zipcode: req.body.address.zip
   });
-  User.findOne({ _id: req._id },
-    (err, user) => {
-      if (!user)
-        return res.status(404).json({ message: 'User record not found.' });
-      else {
-        user.email = req.body.email;
-        user.firstName = req.body.firstName;
-        user.lastName = req.body.lastName;
-        user.business.kbis = req.body.kbis;
-        var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city };
-        address.geolocation = {
-          coordinates: [loc[0].latitude, loc[0].longitude],
-        };
-        user.address = address;
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-
-            res.status(201).send({
-              message: user.business.role + ' updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
-            res.status(400).send({
-              error: error
-            });
-          }
-        );
-      }
+  try {
+    user = await User.findOne({ _id: req._id }).exec();
+    user.email = req.body.email;
+    user.firstName = req.body.firstName;
+    user.lastName = req.body.lastName;
+    user.business.kbis = req.body.kbis;
+    var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city };
+    address.geolocation = {
+      coordinates: [loc[0].latitude, loc[0].longitude],
+    };
+    user.address = address;
+    const customer = await stripe.customers.create({
+      email: req.body.email,
     });
+    user.customerId = customer.id;
+    User.updateOne({ _id: user._id }, user).then(
+      () => {
+
+        res.status(201).send({
+          message: user.business.role + ' updated successfully!'
+        });
+      }
+    ).catch(
+      (error) => {
+        res.status(400).send({
+          error: error
+        });
+      }
+    );
+
+  }
+  catch (err) {
+    console.log(error);
+    res.status(400).json({
+      error: err
+    });
+  }
 }
 
 exports.updateProfile = async (req, res) => {
@@ -763,7 +777,7 @@ exports.myDescription = function (req, res) {
 exports.getSaloon = function (req, res) {
 
   User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
-  populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
+    populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)
         return res.status(404).json({ message: 'saloon record not found.' });
@@ -782,10 +796,10 @@ exports.addFeedBack = function (req, res) {
         return res.status(404).json({ status: false, message: 'Business record not found.' });
       else {
         let feedback_nb = business.business.feedbacks.length + 1;
-        business.business.rate.reception = ((business.business.rate.reception*(feedback_nb-1))+req.body.reception)/feedback_nb;
-        business.business.rate.atmosphere = ((business.business.rate.atmosphere*(feedback_nb-1))+req.body.atmosphere)/feedback_nb;
-        business.business.rate.cleanliness = ((business.business.rate.cleanliness*(feedback_nb-1))+req.body.cleanliness)/feedback_nb;
-        business.business.rate.prestation_quality = ((business.business.rate.prestation_quality*(feedback_nb-1))+req.body.prestation_quality)/feedback_nb;
+        business.business.rate.reception = ((business.business.rate.reception * (feedback_nb - 1)) + req.body.reception) / feedback_nb;
+        business.business.rate.atmosphere = ((business.business.rate.atmosphere * (feedback_nb - 1)) + req.body.atmosphere) / feedback_nb;
+        business.business.rate.cleanliness = ((business.business.rate.cleanliness * (feedback_nb - 1)) + req.body.cleanliness) / feedback_nb;
+        business.business.rate.prestation_quality = ((business.business.rate.prestation_quality * (feedback_nb - 1)) + req.body.prestation_quality) / feedback_nb;
         business.business.rate.total = (business.business.rate.reception + business.business.rate.atmosphere + business.business.rate.cleanliness + business.business.rate.prestation_quality) / 4;
         rate = business.business.rate;
         let avg = (req.body.prestation_quality + req.body.atmosphere + req.body.cleanliness + req.body.reception) / 4;
@@ -795,12 +809,12 @@ exports.addFeedBack = function (req, res) {
             notification.sender = req._id;
             notification.receiver = req.body.businessId;
             notification.type = 'feedback';
-            notification.content = req.firstName+' '+req.lastName+' vous a noté ' + avg.toFixed(1) + " étoiles";
+            notification.content = req.firstName + ' ' + req.lastName + ' vous a noté ' + avg.toFixed(1) + " étoiles";
             sendNotification(notification);
             const message = {
               notification: {
                 title: 'Nouvelle réservation',
-                body: req.firstName+' '+req.lastName+' vous a noté ' + avg.toFixed(1) + " étoiles",
+                body: req.firstName + ' ' + req.lastName + ' vous a noté ' + avg.toFixed(1) + " étoiles",
               }
             }
             sendPushNotification(message, business.fcm_id);
@@ -960,6 +974,18 @@ exports.availableSlots = function (req, res) {
       }
     });
 
+}
+
+exports.refreshToken = function (req, res) {
+  User.findOne({ _id: req._id },
+    (err, user) => {
+      if (!user) {
+        res.status(403).send({message:"Invalid Token"})
+      }
+      else {
+          res.json({ "token": user.generateJwt() });
+      }
+    });
 }
 
 

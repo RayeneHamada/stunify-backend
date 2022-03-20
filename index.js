@@ -6,6 +6,7 @@ require('./models/categoryModel');
 require('./models/appointmentModel');
 require('./models/notificationModel');
 require('./models/subscriptionModel');
+require('./models/planModel');
 
 
 require('./config/dbConfig');
@@ -40,13 +41,17 @@ const userRoute = require('./routes/userRoute');
 const categoryRoute = require('./routes/categoryRoute');
 const appointmentRoute = require('./routes/appointmentRoute');
 const subscriptionRoute = require('./routes/subscriptionRoute');
+const planRoute = require('./routes/planRoute');
 const notificationRoute = require('./routes/notificationRoute');
+const stripeRoute = require('./routes/stripeRoute');
 //use routes
 app.use('/user', userRoute);
 app.use('/category', categoryRoute);
 app.use('/booking', appointmentRoute);
 app.use('/subscription', subscriptionRoute);
+app.use('/plan', planRoute);
 app.use('/notification', notificationRoute);
+app.use('/stripe', stripeRoute);
 app.use(express.static(path.join(__dirname, 'public')));
 
 /** catch 404 and forward to error handler */

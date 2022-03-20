@@ -19,6 +19,7 @@ module.exports.verifyJwtToken = (req, res, next) => {
                     req.firsName = decoded.firstName;
                     req.lastName = decoded.lastName;
                     req.profilePicture = decoded.profilePicture;
+                    req.customerId = decoded.customerId;
                     next();
 
                 }
@@ -50,6 +51,8 @@ module.exports.verifyUserJwtToken = (req, res, next) => {
                         req.firstName = decoded.firstName;
                         req.lastName = decoded.lastName;
                         req.profilePicture = decoded.profilePicture;
+                        req.customerId = decoded.customerId;
+
                         next();
                     }
                 }
@@ -81,6 +84,7 @@ module.exports.verifyBusinessJwtToken = (req, res, next) => {
                         req.firstName = decoded.firstName;
                         req.lastName = decoded.lastName;
                         req.profilePicture = decoded.profilePicture;
+                        req.customerId = decoded.customerId;
                         next();
                     }
 

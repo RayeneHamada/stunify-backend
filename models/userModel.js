@@ -55,6 +55,9 @@ var userSchema = new mongoose.Schema({
       type: String,
       default: 'switzerland'
     },
+    customerId:{
+      type:String
+    },
 
     geolocation: GeoSchema,
 
@@ -74,13 +77,14 @@ var userSchema = new mongoose.Schema({
 
 
   business: {
+
     kbis: {
       type: String,
     },
     subscription: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscriptions"
-    },
+    }, 
     role: {
       type: String,
     },
@@ -214,7 +218,7 @@ userSchema.path('email').validate((val) => {
 
 
 userSchema.methods.generateJwt = function () {
-  return jwt.sign({ _id: this._id, role: this.role, profilePicture: this.profile_image, firstName: this.firstName, lastName: this.lastName, email: this.email },
+  return jwt.sign({ _id: this._id, role: this.role, profilePicture: this.profile_image, firstName: this.firstName, lastName: this.lastName, email: this.email, customerId: this.customerId },
     process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_EXP

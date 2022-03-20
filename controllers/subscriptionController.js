@@ -1,108 +1,61 @@
-  
-const mongoose  = require('mongoose'),
-Subscription = mongoose.model('Subscriptions');
+
+const mongoose = require('mongoose'),
+  Subscription = mongoose.model('Subscriptions');
 User = mongoose.model('Users');
+const stripe = require('stripe')('sk_test_51KP08pLMtIUZpRLREAa8uysOP9BeHwZuOX88GEO99T5kXcOKjkKoVc4b3kuqRNdwhUH1PhRxIgAWlTNkkUoWhqe500boZr5U3p');
 
 
 
-exports.new = function(req,res)
-{
+exports.create = async (req, res) => {
+  const customerId = req.customerId;
+
+  // Create the subscription
+  const priceId = req.body.priceId;
+
+  try {
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{
+        price: priceId,
+      }],
+      payment_behavior: 'default_incomplete',
+      expand: ['latest_invoice.payment_intent'],
+    });
     sub = new Subscription();
-    sub.name = req.body.name;
-    sub.price = req.body.price;
-    sub.duration = req.body.duration;
-    sub.save((err,doc) => {
-        if (err) {
-
-            if (err.code === 11000)
-            return res.status(500).json({message:"Subscription already exits"});
-        }
-        else{
-            return res.status(200).send(doc);
-        }
+    sub.owner = req._id;
+    sub.plan = req.body.plan;
+    sub.subscriptionId = subscription.id;
+    sub.save((err, doc) => {
+      if (err) {
+        return res.status(500).json({ message: err });
+      }
+      else {
+        res.send({
+          subscriptionId: subscription.id,
+          clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+        });
+      }
     })
+
+
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } });
+  }
+
 }
-exports.fetchAll = function(req,res)
-{
-
-    Subscription.find({}, function(err, doc) {
-    
-    if (err) {
-
-      return res.status(500).json(err);
-    }
-    else{
-        return res.status(200).send(doc);
-    }
-  });
-  
+exports.confirmSubscriptionPayment = function(req,res){
+  console.log(req.body);
 }
 
-exports.buySubscription = function(req,res)
-{
-    //si paiement verifié
-        User.findById(req._id, (err, user) => {
-            if (err){
-                res.status(500).send(err);
-            }
-            else {
-                user.business.subscription = req.body.subscription;
-                User.updateOne({_id: req._id}, user).then(
-                    () => {
-                      res.status(201).json({
-                        message: 'Subscription changed successfuly'
-                      });
-                    }
-                ).catch(
-                    (error) => {
-                      res.status(400).json({
-                        error: error
-                      });
-                    }
-                );
-            }
-        })
-  
+exports.cancel = async (req, res) => {
+  try {
+    const deletedSubscription = await stripe.subscriptions.del(
+      req.body.subscriptionId
+    );
+
+    res.send({ subscription: deletedSubscription });
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } });
+  }
+
 }
-
-exports.fetchAll = function(req,res)
-{
-
-    Subscription.find({}, function(err, doc) {
-    
-    if (err) {
-
-      return res.status(500).json(err);
-    }
-    else {
-
-        return res.status(200).send(doc);
-    }
-  });
-  
-}
-
-exports.mySub = function (req, res) {
-    Subscription.find({}).lean().exec( (err, subs) => {
-        if (err) {
-            return res.status(500).json(err);
-        }
-        else {
-            User.findById(req._id, (err, user) => {
-                subs.forEach((sub) => {
-                    if (sub._id.equals(user.business.subscription))
-                    {
-                        console.log("hoy");
-                        sub.owner = true;
-                    }
-                    else
-                    {
-                        sub.owner = false;
-                    }
-                })
-                return res.status(200).send(subs);
-            })
-        }
-    })
-}
-
