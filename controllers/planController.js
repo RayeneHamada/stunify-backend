@@ -19,7 +19,7 @@ exports.newPlan = async (req, res) => {
             name:req.body.name
         }
     });
-    p.stripe_id = price.id;
+    p.priceId = price.id;
     console.log(price)
     p.save((err, doc) => {
         if (err) {

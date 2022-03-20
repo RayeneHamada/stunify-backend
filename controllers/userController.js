@@ -274,7 +274,7 @@ exports.completeSubscription = async (req, res) => {
 
 }
 
-exports.completeBusinessSignup = async function (req, res) {
+exports.completeBusinessSignup = async (req, res) => {
 
   const loc = await geocoder.geocode({
     address: req.body.address.street + " " + req.body.address.city,
@@ -314,7 +314,7 @@ exports.completeBusinessSignup = async function (req, res) {
 
   }
   catch (err) {
-    console.log(error);
+    console.log(err);
     res.status(400).json({
       error: err
     });

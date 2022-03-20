@@ -13,7 +13,7 @@ var planSchema = new mongoose.Schema({
     price: {
         type: Number
     },
-    stripe_id:{
+    priceId:{
         type:String
     }
   });

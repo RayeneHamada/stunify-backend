@@ -55,13 +55,13 @@ var userSchema = new mongoose.Schema({
       type: String,
       default: 'switzerland'
     },
-    customerId:{
-      type:String
-    },
 
     geolocation: GeoSchema,
 
 
+  },
+  customerId:{
+    type:String
   },
   role: {
     type: String,
