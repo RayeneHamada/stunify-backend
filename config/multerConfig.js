@@ -6,8 +6,8 @@ const path = require('path');
     destination: 'public/img', 
    filename: (req, file, cb) => {
      console.log(req.body);
-          cb(null, file.fieldname + '_' + Date.now() 
-             + path.extname(file.originalname))
+     cb(null, file.fieldname + '_' + Date.now() 
+     + '.jpg')
             // file.fieldname is name of the field (image)
             // path.extname get the uploaded file extension
     }
