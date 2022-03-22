@@ -52,7 +52,7 @@ app.use('/subscription', subscriptionRoute);
 app.use('/plan', planRoute);
 app.use('/notification', notificationRoute);
 app.use('/stripe', stripeRoute);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public/img',express.static(path.join(__dirname, 'public/img')));
 
 /** catch 404 and forward to error handler */
 app.use('*', (req, res) => {
