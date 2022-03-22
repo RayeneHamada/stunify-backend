@@ -30,10 +30,29 @@ exports.create = async (req, res) => {
         return res.status(500).json({ message: err });
       }
       else {
-        res.send({
-          subscriptionId: subscription.id,
-          clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-        });
+        User.findOne({ _id: req._id },
+          (err, user) => {
+            if (!user)
+              return res.status(404).json({ status: false, message: 'User record not found.' });
+            else {
+              user.business.subscription = req.body.doc._id;
+              User.updateOne({ _id: user._id }, user).then(
+                () => {
+                  res.send({
+                    subscriptionId: subscription.id,
+                    clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+                  });
+                }
+              ).catch(
+                (error) => {
+                  res.status(400).json({
+                    error: error
+                  });
+                }
+              );
+            }
+          });
+        
       }
     })
 
