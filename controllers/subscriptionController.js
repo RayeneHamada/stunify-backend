@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
             if (!user)
               return res.status(404).json({ status: false, message: 'User record not found.' });
             else {
-              user.business.subscription = req.body.doc._id;
+              user.business.subscription = doc._id;
               User.updateOne({ _id: user._id }, user).then(
                 () => {
                   res.send({
