@@ -5,7 +5,6 @@ const path = require('path');
     // Destination to store image     
     destination: 'public/img', 
    filename: (req, file, cb) => {
-     console.log(req.body);
      cb(null, file.fieldname + '_' + Date.now() 
      + '.jpg')
             // file.fieldname is name of the field (image)

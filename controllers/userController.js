@@ -77,10 +77,22 @@ exports.sendCodeTest = function (req, res) {
         });
       }
       else {
-        if (user.profile_image)
-          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
-        else
-          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName });
+        if(req.body.fcm_id)
+        user.fcm_id = req.body.fcm_id;
+        User.updateOne({ _id: user._id }, user).then(
+          () => {
+            if (user.profile_image)
+              res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
+            else
+              res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
 
 
       }
@@ -112,12 +124,23 @@ exports.sendBusinessCodeTest = function (req, res) {
         });
       }
       else {
-        if (user.profile_image)
+        if(req.body.fcm_id)
+        user.fcm_id = req.body.fcm_id;
+        User.updateOne({ _id: user._id }, user).then(
+          () => {
+            if (user.profile_image)
           res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
         else
           res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName });
 
-
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
       }
     });
 
@@ -980,10 +1003,10 @@ exports.refreshToken = function (req, res) {
   User.findOne({ _id: req._id },
     (err, user) => {
       if (!user) {
-        res.status(403).send({message:"Invalid Token"})
+        res.status(403).send({ message: "Invalid Token" })
       }
       else {
-          res.json({ "token": user.generateJwt() });
+        res.json({ "token": user.generateJwt() });
       }
     });
 }
