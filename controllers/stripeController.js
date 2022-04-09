@@ -6,10 +6,8 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const path = require('path');
 
 
-
 exports.webhook = async (req, res) => {
   let event;
-
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
@@ -58,7 +56,7 @@ exports.webhook = async (req, res) => {
               return res.status(404).json({ status: false, message: 'User record not found.' });
             else {
               user.stripe.subscriptionId = subscription_id;
-              User.updateOne({ customerId: dataObject['billing_reason'] }, user).then(
+              User.updateOne({ 'stripe.customerId': dataObject['customer'] }, user).then(
                 () => {
                 }
               )
