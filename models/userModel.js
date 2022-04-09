@@ -60,9 +60,15 @@ var userSchema = new mongoose.Schema({
 
 
   },
-  customerId:{
-    type:String
+  stripe: {
+    customerId: {
+      type: String
+    },
+    subscriptionId: {
+      type: String
+    }
   },
+  
   role: {
     type: String,
     default: 'user'
@@ -75,7 +81,6 @@ var userSchema = new mongoose.Schema({
     }],
   },
 
-
   business: {
 
     kbis: {
@@ -84,7 +89,7 @@ var userSchema = new mongoose.Schema({
     subscription: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscriptions"
-    }, 
+    },
     role: {
       type: String,
     },
@@ -99,34 +104,34 @@ var userSchema = new mongoose.Schema({
       type: String
     },
     rate: {
-        total: {
-          type: Number,
-          default: 0,
-        },
-        reception: {
-          type: Number,
-          default: 0
-        },
-        cleanliness: {
-          type: Number,
-          default: 0
-        },
-        atmosphere: {
-          type: Number,
-          default: 0
-        },
-        prestation_quality: {
-          type: Number,
-          default: 0
-        }
-      
+      total: {
+        type: Number,
+        default: 0,
+      },
+      reception: {
+        type: Number,
+        default: 0
+      },
+      cleanliness: {
+        type: Number,
+        default: 0
+      },
+      atmosphere: {
+        type: Number,
+        default: 0
+      },
+      prestation_quality: {
+        type: Number,
+        default: 0
+      }
+
     },
     feedbacks: [{
       owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Users"
       },
-      feedback_content:String,
+      feedback_content: String,
       rate: {
         avg: {
           type: Number,

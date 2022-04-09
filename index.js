@@ -13,25 +13,17 @@ require('./config/dbConfig');
 
 const http = require("http");
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require('cors');
 const path = require('path');
 const socketio = require("socket.io");
-
-
-
-
-
-
 const passport = require('passport');
-
 const app = express();
+
+
+app.use("/stripe", express.raw({ type: "*/*" }));
+app.use(express.json());
 app.use(cors());
 app.use(passport.initialize())
-app.use(bodyParser.urlencoded({ extended: false }))
-
- 
-app.use(bodyParser.json());
 
 //import utils
 const WebSockets = require("./utils/WebSockets.js");

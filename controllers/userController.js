@@ -17,7 +17,7 @@ const axios = require('axios').default;
 const geocoder = require('../utils/geocoder');
 const ObjectId = mongoose.Types.ObjectId;
 var moment = require('moment');
-const stripe = require('stripe')('sk_test_51KP08pLMtIUZpRLREAa8uysOP9BeHwZuOX88GEO99T5kXcOKjkKoVc4b3kuqRNdwhUH1PhRxIgAWlTNkkUoWhqe500boZr5U3p');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
@@ -270,10 +270,12 @@ exports.completeSubscription = async (req, res) => {
     const customer = await stripe.customers.create({
       email: req.body.email,
     });
-    user.customerId = customer.id;
+    user.stripe.customerId = customer.id;
+    console.log(user);
     User.updateOne({ _id: user._id }, user).then(
-      () => {
-
+      (err,doc) => {
+        console.log(doc);
+        if(!err)
         res.status(201).json({
           message: user.role + ' updated successfully!'
         });
@@ -319,7 +321,7 @@ exports.completeBusinessSignup = async (req, res) => {
     const customer = await stripe.customers.create({
       email: req.body.email,
     });
-    user.customerId = customer.id;
+    user.stripe.customerId = customer.id;
     User.updateOne({ _id: user._id }, user).then(
       () => {
 
