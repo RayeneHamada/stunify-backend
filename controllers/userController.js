@@ -1009,6 +1009,20 @@ exports.getMySubStatus = async (req, res) => {
         const subscription = await stripe.subscriptions.retrieve(
           doc.stripe.subscriptionId
         );
+        if(subscription.status != "active" && doc.business.subscription_state == "active"){
+          doc.business.subscription_state = "inactive"
+          User.updateOne({_id:req._id},doc).then(
+            () => {
+              res.json({ "status": subscription.status });
+            }
+          ).catch(
+            (error) => {
+              res.status(400).json({
+                error: error
+              });
+            }
+          );
+        }
         res.json({ "status": subscription.status });
       }
       else {
