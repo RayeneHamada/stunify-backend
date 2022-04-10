@@ -56,6 +56,7 @@ exports.webhook = async (req, res) => {
               return res.status(404).json({ status: false, message: 'User record not found.' });
             else {
               user.stripe.subscriptionId = subscription_id;
+              user.business.subscription_state = "active";
               User.updateOne({ 'stripe.customerId': dataObject['customer'] }, user).then(
                 () => {
                 }

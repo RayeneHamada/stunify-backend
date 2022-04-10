@@ -86,9 +86,9 @@ var userSchema = new mongoose.Schema({
     kbis: {
       type: String,
     },
-    subscription: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Subscriptions"
+    subscription_state: {
+      type: String,
+      default:'inactive'
     },
     role: {
       type: String,

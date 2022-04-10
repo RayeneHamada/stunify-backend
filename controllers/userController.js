@@ -77,8 +77,8 @@ exports.sendCodeTest = function (req, res) {
         });
       }
       else {
-        if(req.body.fcm_id)
-        user.fcm_id = req.body.fcm_id;
+        if (req.body.fcm_id)
+          user.fcm_id = req.body.fcm_id;
         User.updateOne({ _id: user._id }, user).then(
           () => {
             if (user.profile_image)
@@ -124,14 +124,14 @@ exports.sendBusinessCodeTest = function (req, res) {
         });
       }
       else {
-        if(req.body.fcm_id)
-        user.fcm_id = req.body.fcm_id;
+        if (req.body.fcm_id)
+          user.fcm_id = req.body.fcm_id;
         User.updateOne({ _id: user._id }, user).then(
           () => {
             if (user.profile_image)
-          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
-        else
-          res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName });
+              res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName, "profile_image": user.profile_image });
+            else
+              res.json({ operatiton: "login", verified: true, "token": user.generateJwt(), "firstName": user.firstName, "lastName": user.lastName });
 
           }
         ).catch(
@@ -262,8 +262,7 @@ exports.verifCode = function (req, res) {
 }
 
 exports.completeSubscription = async (req, res) => {
-  try {
-    user = await User.findOne({ _id: req._id }).exec();
+  User.findOne({ _id: req._id }, async (err, user) => {
     user.firstName = req.body.firstName;
     user.lastName = req.body.lastName;
     user.email = req.body.email;
@@ -271,14 +270,11 @@ exports.completeSubscription = async (req, res) => {
       email: req.body.email,
     });
     user.stripe.customerId = customer.id;
-    console.log(user);
     User.updateOne({ _id: user._id }, user).then(
-      (err,doc) => {
-        console.log(doc);
-        if(!err)
-        res.status(201).json({
-          message: user.role + ' updated successfully!'
-        });
+      () => {
+          res.status(201).json({
+            message: user.role + ' updated successfully!'
+          });
       }
     ).catch(
       (error) => {
@@ -288,14 +284,9 @@ exports.completeSubscription = async (req, res) => {
         });
       }
     );
+  });
 
-  }
-  catch (err) {
-    console.log(error);
-    res.status(400).json({
-      error: err
-    });
-  }
+
 
 }
 
@@ -656,7 +647,7 @@ exports.home = (req, res) => {
           "maxDistance": 10000000, //10km
           "distanceMultiplier": 1 / 1000,
           "spherical": true,
-          "query": { "role": "business", "business.role": "saloon" },
+          "query": { "role": "business", "business.role": "saloon", "business.subscription_state": "active" },
         }
       },
       {
@@ -678,7 +669,7 @@ exports.home = (req, res) => {
               "distanceMultiplier": 1 / 1000,
 
               "spherical": true,
-              "query": { "role": "business", "business.role": "freelancer" },
+              "query": { "role": "business", "business.role": "freelancer", "business.subscription_state": "active" },
             }
           },
           {
@@ -859,8 +850,6 @@ exports.addFeedBack = function (req, res) {
     });
 }
 
-
-
 exports.getFreelance = function (req, res) {
 
   User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo').
@@ -1011,6 +1000,27 @@ exports.refreshToken = function (req, res) {
         res.json({ "token": user.generateJwt() });
       }
     });
+}
+
+exports.getMySubStatus = async (req, res) => {
+  User.findOne({ _id: req._id }, async (err, doc) => {
+    if (!err) {
+      if (doc.stripe.subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(
+          doc.stripe.subscriptionId
+        );
+        res.json({ "status": subscription.status });
+      }
+      else {
+        res.json({ "status": "inactive" })
+      }
+
+    }
+    else {
+      res.status(502).send(err);
+    }
+  })
+
 }
 
 

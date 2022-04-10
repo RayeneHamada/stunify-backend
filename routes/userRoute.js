@@ -30,6 +30,7 @@ router.get('/myPrestations',jwtHelper.verifyBusinessJwtToken, main_controller.my
 router.get('/mySchedule',jwtHelper.verifyBusinessJwtToken, main_controller.mySchedule);
 router.get('/myBusinessProfile',jwtHelper.verifyBusinessJwtToken, main_controller.myBusinessProfile);
 router.get('/myDescription',jwtHelper.verifyBusinessJwtToken, main_controller.myDescription);
+router.get('/mySubStatus',jwtHelper.verifyBusinessJwtToken, main_controller.getMySubStatus);
 router.get('/myProfile',jwtHelper.verifyJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 router.get('/refreshToken', jwtHelper.verifyJwtToken,main_controller.refreshToken);
