@@ -685,6 +685,31 @@ exports.home = (req, res) => {
     }
   )
 }
+exports.getAll = (req, res) => {
+
+  User.aggregate(
+    [
+      {
+        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+      }
+    ],
+    function (err, results) {
+      var saloons = results;
+      User.aggregate(
+        [
+          {
+            "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+          }
+        ],
+        function (err, results) {
+          var freelancers = results;
+
+          res.status(201).send({ "saloons": saloons, "freelancers": freelancers });
+        }
+      )
+    }
+  )
+}
 
 exports.search = (req, res) => {
 

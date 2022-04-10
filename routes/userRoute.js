@@ -41,6 +41,7 @@ router.post('/addFeedBack',jwtHelper.verifyUserJwtToken, main_controller.addFeed
 
 
 router.post('/home', main_controller.home);
+router.get('/getAll', main_controller.getAll);
 
 
 
