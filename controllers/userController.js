@@ -651,7 +651,7 @@ exports.home = (req, res) => {
         }
       },
       {
-        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
       }
     ],
     function (err, results) {
@@ -673,7 +673,7 @@ exports.home = (req, res) => {
             }
           },
           {
-            "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+            "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
           }
         ],
         function (err, results) {
@@ -690,7 +690,7 @@ exports.getAll = (req, res) => {
   User.aggregate(
     [
       {
-        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
       }
     ],
     function (err, results) {
@@ -698,7 +698,7 @@ exports.getAll = (req, res) => {
       User.aggregate(
         [
           {
-            "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+            "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
           }
         ],
         function (err, results) {
@@ -817,7 +817,7 @@ exports.myDescription = function (req, res) {
 
 exports.getSaloon = function (req, res) {
 
-  User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
+  User.findOne({ _id: req.params.id }, 'business.schedule address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
     populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)
