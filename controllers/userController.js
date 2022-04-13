@@ -689,6 +689,9 @@ exports.getAll = (req, res) => {
 
   User.aggregate(
     [
+      { 
+        "$match" : { "role": "business", "business.role": "saloon" } 
+      },
       {
         "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
       }
@@ -697,6 +700,9 @@ exports.getAll = (req, res) => {
       var saloons = results;
       User.aggregate(
         [
+          { 
+            "$match" : { "role": "business", "business.role": "freelance",} 
+          },
           {
             "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
           }
