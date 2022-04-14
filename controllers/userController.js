@@ -113,7 +113,7 @@ exports.sendBusinessCodeTest = function (req, res) {
         user.business.businessName = req.body.businessName;
         user.business.role = req.body.role;
         user.fcm_id = req.body.fcm_id;
-        if (user.business.role == "freelance") {
+        if (user.business.role == "freelancer") {
           user.business.mobility = req.body.mobility;
         }
         user.save((err, doc) => {
@@ -171,7 +171,7 @@ exports.sendBusinessCode = function (req, res) {
               user.business.catrgories = req.body.categories;
               user.business.businessName = req.body.businessName;
               user.business.role = req.body.role;
-              if (user.business.role == "freelance") {
+              if (user.business.role == "freelancer") {
                 user.business.mobility = req.body.mobility;
               }
               user.save((err, doc) => {
@@ -262,31 +262,47 @@ exports.verifCode = function (req, res) {
 }
 
 exports.completeSubscription = async (req, res) => {
-  User.findOne({ _id: req._id }, async (err, user) => {
+  const loc = await geocoder.geocode({
+    address: req.body.address.street + " " + req.body.address.city,
+    country: req.body.address.country,
+    zipcode: req.body.address.zip
+  });
+  try {
+    user = await User.findOne({ _id: req._id }).exec();
+    user.email = req.body.email;
     user.firstName = req.body.firstName;
     user.lastName = req.body.lastName;
-    user.email = req.body.email;
+    var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city, "country": req.body.address.country };
+    address.geolocation = {
+      coordinates: [loc[0].latitude, loc[0].longitude],
+    };
+    user.address = address;
     const customer = await stripe.customers.create({
       email: req.body.email,
     });
     user.stripe.customerId = customer.id;
     User.updateOne({ _id: user._id }, user).then(
       () => {
-          res.status(201).json({
-            message: user.role + ' updated successfully!'
-          });
+
+        res.status(201).send({
+          message: 'User updated successfully!'
+        });
       }
     ).catch(
       (error) => {
-        console.log(error);
-        res.status(400).json({
+        res.status(400).send({
           error: error
         });
       }
     );
-  });
 
-
+  }
+  catch (err) {
+    console.log(err);
+    res.status(400).json({
+      error: err
+    });
+  }
 
 }
 
@@ -294,8 +310,7 @@ exports.completeBusinessSignup = async (req, res) => {
 
   const loc = await geocoder.geocode({
     address: req.body.address.street + " " + req.body.address.city,
-    //country: "Switzerland",
-    country: req.body.country,
+    country: req.body.address.country,
     zipcode: req.body.address.zip
   });
   try {
@@ -304,7 +319,7 @@ exports.completeBusinessSignup = async (req, res) => {
     user.firstName = req.body.firstName;
     user.lastName = req.body.lastName;
     user.business.kbis = req.body.kbis;
-    var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city };
+    var address = { "street": req.body.address.street, "zip": req.body.address.zip, "city": req.body.address.city, "country": req.body.address.country };
     address.geolocation = {
       coordinates: [loc[0].latitude, loc[0].longitude],
     };
@@ -569,13 +584,12 @@ exports.updateAddressReverse = async (req, res) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
-
+        console.log()
         var address = { "street": loc[0].streetName, "zip": loc[0].zipcode, "city": loc[0].city };
         address.geolocation = {
           coordinates: [req.body.lat, req.body.lon],
         };
         user.address = address;
-        console.log(user);
 
         User.updateOne({ _id: user._id }, user).then(
           () => {
@@ -685,12 +699,13 @@ exports.home = (req, res) => {
     }
   )
 }
+
 exports.getAll = (req, res) => {
 
   User.aggregate(
     [
-      { 
-        "$match" : { "role": "business", "business.role": "saloon" } 
+      {
+        "$match": { "role": "business", "business.role": "saloon" }
       },
       {
         "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
@@ -700,8 +715,8 @@ exports.getAll = (req, res) => {
       var saloons = results;
       User.aggregate(
         [
-          { 
-            "$match" : { "role": "business", "business.role": "freelance",} 
+          {
+            "$match": { "role": "business", "business.role": "freelancer", }
           },
           {
             "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.mobility": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
@@ -887,7 +902,7 @@ exports.getFreelance = function (req, res) {
     populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)
-        return res.status(404).json({ message: 'Freelance record not found.' });
+        return res.status(404).json({ message: 'Freelancer record not found.' });
       else {
         return res.status(200).json(user);
 
@@ -976,7 +991,7 @@ exports.availableSlots = function (req, res) {
     populate('business.appointments').
     exec((err, user) => {
       if (!user)
-        return res.status(404).json({ message: 'Freelance record not found.' });
+        return res.status(404).json({ message: 'Business record not found.' });
       else {
         let duration = req.params.duration,
           date = new Date(req.params.year, req.params.month - 1, req.params.day, 0, 0, 0, 0),
@@ -1040,9 +1055,9 @@ exports.getMySubStatus = async (req, res) => {
         const subscription = await stripe.subscriptions.retrieve(
           doc.stripe.subscriptionId
         );
-        if(subscription.status != "active" && doc.business.subscription_state == "active"){
+        if (subscription.status != "active" && doc.business.subscription_state == "active") {
           doc.business.subscription_state = "inactive"
-          User.updateOne({_id:req._id},doc).then(
+          User.updateOne({ _id: req._id }, doc).then(
             () => {
               res.json({ "status": subscription.status });
             }
