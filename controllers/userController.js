@@ -744,7 +744,7 @@ exports.search = (req, res) => {
   User.aggregate(
     [
 
-      {
+      /*{
         "$geoNear": {
           "near": {
             "type": "Point",
@@ -761,6 +761,12 @@ exports.search = (req, res) => {
             [dateQuery]: true
           },
         }
+      },*/
+      {
+        "$match": {
+          "role": "business",
+          [dateQuery]: true
+        }
       },
 
       {
@@ -776,7 +782,10 @@ exports.search = (req, res) => {
         '$match':
 
         {
-          'prestations.price': { '$in': [req.body.price[0], req.body.price[1]] },
+          'prestations.price': {
+            $gt: req.body.price[0],
+            $lt: req.body.price[1]
+          },
           'prestations.category': { "$in": categories },
         }
       },
