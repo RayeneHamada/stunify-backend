@@ -4,17 +4,23 @@ const jwt = require('jsonwebtoken');
 
 var categorySchema = new mongoose.Schema({
 
-  name:{
+  name: {
     type: String,
     unique: true,
-    required : true
+    required: true
   },
-  icon:{
+  icon: {
     type: String,
-    required : true
-  }
+    required: true
+  },
+  black_picture: {
+    type: String
+  },
+  white_picture: {
+    type: String
+  },
 
-  });
+});
 
 
 mongoose.model('Categories', categorySchema);

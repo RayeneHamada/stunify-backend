@@ -3,20 +3,24 @@ var planSchema = new mongoose.Schema({
 
     name: {
         type: String,
-        unique:true,
+        unique: true,
     },
     // in months
-    duration : {
+    duration: {
         type: Number,
-        unique:true,
+        unique: true,
     },
     price: {
         type: Number
     },
-    priceId:{
-        type:String
+    priceId: {
+        type: String
+    },
+    is_active: {
+        type: Boolean,
+        default: true
     }
-  });
+});
 
 
 mongoose.model('Plans', planSchema);

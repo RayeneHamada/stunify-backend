@@ -1,23 +1,23 @@
 
 const mongoose = require('mongoose'),
-  User = mongoose.model('Users');
-Prestation = mongoose.model('Prestations');
-Notification = mongoose.model('Notifications');
-const { sendNotification, sendPushNotification } = require('../controllers/notificationController');
-const path = require('path');
-const passport = require('passport');
-const _ = require('lodash');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const serviceSid = process.env.SERVICE_SID;
-const client = require('twilio')(accountSid, authToken);
-const axios = require('axios').default;
-const geocoder = require('../utils/geocoder');
-const ObjectId = mongoose.Types.ObjectId;
-var moment = require('moment');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  User = mongoose.model('Users'),
+  Prestation = mongoose.model('Prestations'),
+  Notification = mongoose.model('Notifications'),
+  Appointments = mongoose.model('Appointments'),
+  { sendNotification, sendPushNotification } = require('../controllers/notificationController'),
+  path = require('path'),
+  passport = require('passport'),
+  _ = require('lodash'),
+  bcrypt = require('bcryptjs'),
+  jwt = require('jsonwebtoken'),
+  accountSid = process.env.TWILIO_ACCOUNT_SID,
+  authToken = process.env.TWILIO_AUTH_TOKEN,
+  serviceSid = process.env.SERVICE_SID,
+  client = require('twilio')(accountSid, authToken),
+  geocoder = require('../utils/geocoder'),
+  ObjectId = mongoose.Types.ObjectId,
+  moment = require('moment'),
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 var week = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
@@ -395,20 +395,29 @@ exports.updateProfileImage = (req, res) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
-        user.profile_image = req.file.filename;
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-            res.status(201).json({
-              message: 'User profile image successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
+        fs.unlink('./public/img/' + user.profile_image, (err) => {
+          if (err) {
             res.status(400).json({
-              error: error
+              error: err
             });
           }
-        );
+          else {
+            user.profile_image = req.file.filename;
+            User.updateOne({ _id: user._id }, user).then(
+              () => {
+                res.status(201).json({
+                  message: 'User profile image updated successfully!'
+                });
+              }
+            ).catch(
+              (error) => {
+                res.status(400).json({
+                  error: error
+                });
+              }
+            );
+          }
+        })
       }
     });
 }
@@ -419,20 +428,29 @@ exports.updateLogo = (req, res) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
-        user.business.logo = req.file.filename;
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-            res.status(201).json({
-              message: 'Logo updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
+        fs.unlink('./public/img/' + user.business.logo, (err) => {
+          if (err) {
             res.status(400).json({
-              error: error
+              error: err
             });
           }
-        );
+          else {
+            user.business.logo = req.file.filename;
+            User.updateOne({ _id: user._id }, user).then(
+              () => {
+                res.status(201).json({
+                  message: 'Logo updated successfully!'
+                });
+              }
+            ).catch(
+              (error) => {
+                res.status(400).json({
+                  error: error
+                });
+              }
+            );
+          }
+        })
       }
     });
 }
@@ -443,20 +461,29 @@ exports.updateOwnerPicture = (req, res) => {
       if (!user)
         return res.status(404).json({ status: false, message: 'User record not found.' });
       else {
-        user.business.owner_picture = req.file.filename;
-        User.updateOne({ _id: user._id }, user).then(
-          () => {
-            res.status(201).json({
-              message: 'owner_picture updated successfully!'
-            });
-          }
-        ).catch(
-          (error) => {
+        fs.unlink('./public/img/' + user.business.owner_picture, (err) => {
+          if (err) {
             res.status(400).json({
-              error: error
+              error: err
             });
           }
-        );
+          else {
+            user.business.owner_picture = req.file.filename;
+            User.updateOne({ _id: user._id }, user).then(
+              () => {
+                res.status(201).json({
+                  message: 'owner_picture updated successfully!'
+                });
+              }
+            ).catch(
+              (error) => {
+                res.status(400).json({
+                  error: error
+                });
+              }
+            );
+          }
+        })
       }
     });
 }
@@ -665,7 +692,7 @@ exports.home = (req, res) => {
         }
       },
       {
-        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "business.logo": 1 }
       }
     ],
     function (err, results) {
@@ -708,7 +735,7 @@ exports.getAll = (req, res) => {
         "$match": { "role": "business", "business.role": "saloon" }
       },
       {
-        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "profile_image": 1 }
+        "$project": { "_id": 1, "address.city": 1, "business.rate.total": 1, "business.businessName": 1, "distance": 1, "business.logo": 1 }
       }
     ],
     function (err, results) {
@@ -790,7 +817,7 @@ exports.search = (req, res) => {
         }
       },
       {
-        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1, "prestations": 1, "address.geolocation": 1 }
+        "$project": { "_id": 1, "address.city": 1, "rate": 1, "business.businessName": 1, "distance": 1, "profile_image": 1, "prestations": 1, "address.geolocation": 1, "business.logo": 1 }
       }
     ],
     function (err, results) {
@@ -859,6 +886,70 @@ exports.getSaloon = function (req, res) {
     });
 
 }
+exports.getOffers = async (req, res) => {
+  await Appointments
+    .aggregate([
+      /*{
+        '$lookup':
+        {
+          'from': "users",
+          'localField': "business",
+          'foreignField': "_id",
+          'as': "business"
+
+        }
+      },*/
+      {
+        '$lookup':
+        {
+          'from': "prestations",
+          'localField': "prestation",
+          'foreignField': "_id",
+          'pipeline': [{
+            '$lookup':
+            {
+              'from': "categories",
+              'localField': "category",
+              'foreignField': "_id",
+              'as': "category"
+
+            }
+          }],
+          'as': "prestation"
+
+        }
+      },
+      {
+
+
+        "$group": {
+          "_id": "$prestation",
+          //"duration":"$duration",
+
+          "appointmentsCount": { "$sum": 1 }
+        }
+      },
+
+      { "$sort": { "appointmentsCount": -1 } },
+
+    ],
+      function (err, results) {
+        res.status(201).send({ "offers": results });
+      });
+
+  /*User.findOne({ _id: req.params.id }, 'business.schedule address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.logo').
+    populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
+    populate().
+    exec((err, user) => {
+      if (!user)
+        return res.status(404).json({ message: 'saloon record not found.' });
+      else {
+        return res.status(200).json(user);
+
+      }
+    });*/
+
+}
 
 exports.addFeedBack = function (req, res) {
   User.findOne({ _id: req.body.businessId },
@@ -907,7 +998,7 @@ exports.addFeedBack = function (req, res) {
 
 exports.getFreelance = function (req, res) {
 
-  User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo').
+  User.findOne({ _id: req.params.id }, 'address business.rate business.space_pictures business.prestations business.feedbacks business.businessName business.about business.mobility business.logo profile_image').
     populate({ path: 'business.feedbacks.owner', select: 'firstName lastName profile_image' }).
     exec((err, user) => {
       if (!user)

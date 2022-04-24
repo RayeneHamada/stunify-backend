@@ -1,8 +1,8 @@
-  
-const mongoose  = require('mongoose'),
-Plan = mongoose.model('Plans');
+
+const mongoose = require('mongoose'),
+    Plan = mongoose.model('Plans');
 User = mongoose.model('Users');
-const stripe = require('stripe')('sk_test_51KP08pLMtIUZpRLREAa8uysOP9BeHwZuOX88GEO99T5kXcOKjkKoVc4b3kuqRNdwhUH1PhRxIgAWlTNkkUoWhqe500boZr5U3p');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 
@@ -14,9 +14,9 @@ exports.newPlan = async (req, res) => {
     const price = await stripe.prices.create({
         unit_amount: req.body.price,
         currency: 'chf',
-        recurring: { interval: 'month',interval_count: req.body.duration},
-        product_data:{
-            name:req.body.name
+        recurring: { interval: 'month', interval_count: req.body.duration },
+        product_data: {
+            name: req.body.name
         }
     });
     p.priceId = price.id;
@@ -32,20 +32,93 @@ exports.newPlan = async (req, res) => {
         }
     });
 }
-exports.allPlans = async(req,res)=>
-{
+exports.allPlans = async (req, res) => {
 
 
-    Plan.find({}, function(err, doc) {
-    
-    if (err) {
+    Plan.find({is_active:true}, async (err, doc) => {
 
-      return res.status(500).json(err);
-    }
-    else{
-        return res.status(200).send(doc);
-    }
-  });
-  
+        if (err) {
+
+            return res.status(500).json(err);
+        }
+        else {
+            return res.status(200).send(doc);
+        }
+    });
+
+}
+
+exports.archivePlan = async (req, res) => {
+
+    Plan.findOne({ _id: req.body.id },
+        async (err, plan) => {
+            if (!plan)
+                return res.status(404).json({ status: false, message: 'Plan record not found.' });
+            else {
+                const price = await stripe.prices.update(
+                    plan.priceId,
+                    {
+                        active: false
+                    }
+                );
+                await stripe.products.update(
+                    price.product,
+                    {
+                        active: false
+                    }
+                );
+                plan.is_active = false;
+                Plan.updateOne({ _id: req.body.id }, plan).then(
+                    () => {
+                        res.status(201).json({
+                            message: 'Plan archived successfully!'
+                        });
+                    }
+                ).catch(
+                    (error) => {
+                        res.status(400).json({
+                            error: error
+                        });
+                    }
+                );
+            }
+        });
+}
+
+exports.unarchivePlan = async (req, res) => {
+
+    Plan.findOne({ _id: req.body.id },
+        async (err, plan) => {
+            if (!plan)
+                return res.status(404).json({ status: false, message: 'Plan record not found.' });
+            else {
+                const price = await stripe.prices.update(
+                    plan.priceId,
+                    {
+                        active: true
+                    }
+                );
+                await stripe.products.update(
+                    price.product,
+                    {
+                        active: true
+                    }
+                );
+                plan.is_active = true;
+                Plan.updateOne({ _id: req.body.id }, plan).then(
+                    () => {
+                        res.status(201).json({
+                            message: 'Plan unarchived successfully!'
+                        });
+                    }
+                ).catch(
+                    (error) => {
+                        res.status(400).json({
+                            error: error
+                        });
+                    }
+                );
+            }
+        });
 }
 

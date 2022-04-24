@@ -34,6 +34,7 @@ router.get('/mySubStatus',jwtHelper.verifyBusinessJwtToken, main_controller.getM
 router.get('/myProfile',jwtHelper.verifyJwtToken, main_controller.myProfile);
 router.get('/availableSlots/:business/:duration/:year/:month/:day', main_controller.availableSlots);
 router.get('/refreshToken', jwtHelper.verifyJwtToken,main_controller.refreshToken);
+router.get('/offers', main_controller.getOffers);
 
 router.post('/addFeedBack',jwtHelper.verifyUserJwtToken, main_controller.addFeedBack);
 

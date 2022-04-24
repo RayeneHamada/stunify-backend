@@ -13,8 +13,5 @@ const path = require('path');
 });
 
 exports.imageUpload = multer({
-    storage: imageStorage,
-    limits: {
-      fileSize: 10000000 // 1000000 Bytes = 1 MB
-    }
+    storage: imageStorage
 })
